@@ -1,49 +1,37 @@
+# Formulon
 
-# formulon
+[![PyPI version](https://img.shields.io/pypi/v/formulon.svg)](https://pypi.org/project/formulon/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python Support](https://img.shields.io/pypi/pyversions/formulon.svg)](https://pypi.org/project/formulon/)
+[![GSoC Eligible](https://img.shields.io/badge/GSoC-Ready-orange.svg)](#)
 
-[![PyPI - Version](https://img.shields.io/pypi/v/formulon.svg)](https://pypi.org/project/formulon)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/formulon.svg)](https://pypi.org/project/formulon)
-[![License](https://img.shields.io/pypi/l/formulon.svg)](https://spdx.org/licenses/MIT.html)
+An optimized, high-performance open-source computational library for mathematical physics, classical mechanics, electronics, wave optics, electromagnetism, and modern quantum frameworks. 
 
-**formulon** is a lightweight, open-source Python library that provides commonly used
-**classical physics formulas** with automatic input validation.This project is designed 
-and developed by SRI KALEESWARAR S, a Physics post graduate student from India.Its a 
-open source,free to use library.I thank my professors from Scott Christian college, special mention to 
-Kaniyam.com and open science labs
-
-It is designed for **students, educators, and scientific Python users**, with support
-for both scalar and NumPy-based vector calculations.
+`formulon` bridges the gap between pure theoretical formulations and industry-grade numerical execution. By leveraging hardware-accelerated vectors via **NumPy**, specialized integrations via **SciPy**, and runtime machine-code serialization via **Numba JIT**, `formulon` delivers execution speeds comparable to compiled C/C++ while exposing a clean, Pythonic API.
 
 ---
 
-## Table of Contents
+## 🚀 Key Features
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Features](#features)
-- [License](#license)
+* **Advanced Mathematical Physics:** Integrated solvers for Fourier transforms, tensor contractions, vector calculus (Stokes, Green, Divergence theorems), and partial differential equations (Heat, Wave equations).
+* **High-Performance Execution:** Performance-critical execution paths are accelerated via `numba` Just-In-Time (`@njit`) compilation, minimizing operational overhead for dense loops and data-intensive pipelines.
+* **Production-Grade Verification Layer:** Decoupled functional boundary assertion utilizing a decorator-driven `validators` layer ensuring parameter dimensions never breach strict physical constants.
+* **Unified API Design:** Clean, direct physical nomenclature (omitting redundant prefixes like `calculate_` or structural suffixes like `_law`) with absolute public registration catalogs (`__all__`).
 
 ---
 
-## Installation
+## 📦 Project Architecture
 
-Install formulon from PyPI:
+The codebase is engineered modularly to segregate distinct physics domains into dedicated computational engines:
 
-```bash
-pip install formulon
-
-## License
-
-formulon is distributed under the terms of the MIT License.
-
-MIT License (Summary)
-
-Free to use, modify, and distribute
-
-Permitted for commercial and academic use
-
-Provided without warranty
-
-Full license text:
-https://spdx.org/licenses/MIT.html
->>>>>>> 0350b6d (Welcome,Im born now)
+```text
+src/formulon/
+├── __init__.py                            # Package namespace constructor
+├── __about__.py                           # Dynamic version registry (Hatch)
+├── validators.py                          # Bound assertions & boundary constraints
+├── mathematical_physics.py                # Vectors, tensors, Fourier, and PDE solvers
+├── numerical_series_modules.py            # Hardware-accelerated progression limits
+├── waves_oscillations_optics.py           # Wave mechanics, acoustics, and ray optics
+├── thermodynamics_statistical_mechanics.py # Thermal expansion, kinetic theory, and cycles
+├── electromagnetism.py                    # Electrostatics, magnetostatics, and Maxwell equations
+└── modern_physics_quantum_relativity.py  # Relativistic dynamics and quantum mechanics

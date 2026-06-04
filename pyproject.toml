@@ -3,32 +3,35 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "formulon"
+name = "formulon-physics"
 dynamic = ["version"]
-description = "An open-source Python library offering classical physics formulas with automatic input validation and NumPy support."
+description = "An optimized open-source computational library for high-performance mathematical and physical formulas."
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "MIT" }
-keywords = ["physics", "formulas", "science", "education", "numpy"]
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+keywords = ["physics", "formulas", "science", "education", "numpy", "scipy", "numba"]
 authors = [
   { name = "SRIKALEESWARAR-S", email = "srikaleeswarar675@gmail.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Education",
-  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = [
-  "numpy>=1.20",
+  "numpy>=1.22.0",
+  "scipy>=1.8.0",
+  "numba>=0.56.0",
 ]
 
 [project.urls]
@@ -53,7 +56,7 @@ branch = true
 parallel = true
 omit = [
   "src/formulon/__about__.py",
-]
+ ]
 
 [tool.coverage.paths]
 formulon = ["src/formulon", "*/formulon/src/formulon"]
@@ -65,4 +68,3 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
-
