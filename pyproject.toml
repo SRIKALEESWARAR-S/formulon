@@ -34,6 +34,11 @@ dependencies = [
   "numba>=0.56.0",
 ]
 
+[project.optional-dependencies]
+qiskit = ["qiskit>=1.0"]
+pennylane = ["pennylane>=0.35"]
+quantum = ["formulon-physics[qiskit,pennylane]"]
+
 [project.urls]
 Documentation = "https://github.com/SRIKALEESWARAR-S/formulon#readme"
 Issues = "https://github.com/SRIKALEESWARAR-S/formulon/issues"

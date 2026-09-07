@@ -1,0 +1,273 @@
+[1mdiff --git a/LICENSE.txt b/LICENSE.txt[m
+[1mdeleted file mode 100644[m
+[1mindex 6b5ac74..0000000[m
+[1m--- a/LICENSE.txt[m
+[1m+++ /dev/null[m
+[36m@@ -1,9 +0,0 @@[m
+[31m-MIT License[m
+[31m-[m
+[31m-Copyright (c) 2026-present SRIKALEESWARAR-S <srikaleeswarar675@gmail.com>[m
+[31m-[m
+[31m-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:[m
+[31m-[m
+[31m-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.[m
+[31m-[m
+[31m-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.[m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 0bc5111..a1593e2 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,49 +1,95 @@[m
+[32m+[m[32m# Formulon[m
+ [m
+[31m-# formulon[m
+[32m+[m[32m[![PyPI version](https://img.shields.io/pypi/v/formulon-physics.svg)](https://pypi.org/project/formulon-physics/)[m
+[32m+[m[32m[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)[m
+[32m+[m[32m[![Python Support](https://img.shields.io/pypi/pyversions/formulon-physics.svg)](https://pypi.org/project/formulon-physics/)[m
+ [m
+[31m-[![PyPI - Version](https://img.shields.io/pypi/v/formulon.svg)](https://pypi.org/project/formulon)[m
+[31m-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/formulon.svg)](https://pypi.org/project/formulon)[m
+[31m-[![License](https://img.shields.io/pypi/l/formulon.svg)](https://spdx.org/licenses/MIT.html)[m
+[32m+[m[32mAn optimized, open-source computational library for mathematical physics, classical mechanics, electronics, wave optics, electromagnetism, thermodynamics, fluid mechanics, and modern (relativistic/quantum) physics -- with an optional quantum-computing extension built on Qiskit and PennyLane.[m
+ [m
+[31m-**formulon** is a lightweight, open-source Python library that provides commonly used[m
+[31m-**classical physics formulas** with automatic input validation.This project is designed [m
+[31m-and developed by SRI KALEESWARAR S, a Physics post graduate student from India.Its a [m
+[31m-open source,free to use library.I thank my professors from Scott Christian college, special mention to [m
+[31m-Kaniyam.com and open science labs[m
+[31m-[m
+[31m-It is designed for **students, educators, and scientific Python users**, with support[m
+[31m-for both scalar and NumPy-based vector calculations.[m
+[32m+[m[32m`formulon` bridges theoretical formulations and numerical execution. Hot numerical loops are accelerated with **NumPy**, special functions are backed by **SciPy**, and pure recurrence-relation computations (e.g. Legendre/Laguerre/Hermite polynomials) are JIT-compiled with **Numba** in true `nopython` mode.[m
+ [m
+ ---[m
+ [m
+[31m-## Table of Contents[m
+[32m+[m[32m## 🚀 Key Features[m
+ [m
+[31m-- [Installation](#installation)[m
+[31m-- [Usage](#usage)[m
+[31m-- [Features](#features)[m
+[31m-- [License](#license)[m
+[32m+[m[32m* **232 physics functions across 8 domains** (see table below): classical mechanics, waves & optics, thermodynamics, electromagnetism, fluid mechanics, mathematical physics (Fourier analysis, vector calculus theorems, special functions, PDE solvers), and modern physics (relativity, quantum mechanics, nuclear decay).[m
+[32m+[m[32m* **Real JIT acceleration where it counts**: pure numeric recurrences (Legendre, Laguerre, Hermite polynomials) run in Numba `nopython` mode. Functions that just delegate to SciPy (e.g. Bessel functions) are left as plain Python, since JIT-wrapping a SciPy call adds overhead with zero speedup.[m
+[32m+[m[32m* **Runtime physical-bounds validation**: a decorator-driven `validator` layer checks every input against real physical constraints (can't exceed light speed, can't go below absolute zero, etc.) before a calculation runs, and turns raw Python exceptions (ZeroDivisionError, OverflowError) into physically-meaningful error messages.[m
+[32m+[m[32m* **Optional quantum-computing extension** (`formulon.quantum_computing`): small, local-simulator-only circuits in Qiskit and PennyLane, including an original **Legendre-polynomial quantum feature map and kernel** that bridges this library's own classical special functions into quantum machine learning. Not installed by default -- see below.[m
+ [m
+ ---[m
+ [m
+[31m-## Installation[m
+[32m+[m[32m## 📦 Installation[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mpip install formulon-physics[m
+[32m+[m[32m```[m
+ [m
+[31m-Install formulon from PyPI:[m
+[32m+[m[32mOptional quantum-computing extras:[m
+ [m
+ ```bash[m
+[31m-pip install formulon[m
+[32m+[m[32mpip install "formulon-physics[qiskit]"      # Qiskit-backed circuits[m
+[32m+[m[32mpip install "formulon-physics[pennylane]"   # PennyLane-backed circuits[m
+[32m+[m[32mpip install "formulon-physics[quantum]"     # both[m
+[32m+[m[32m```[m
+ [m
+[31m-## License[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## ⚡ Quick Start[m
+ [m
+[31m-formulon is distributed under the terms of the MIT License.[m
+[32m+[m[32m```python[m
+[32m+[m[32mimport formulon[m
+ [m
+[31m-MIT License (Summary)[m
+[32m+[m[32mformulon.newtons_second_law(mass=2.0, acceleration=3.0)   # 6.0 N[m
+[32m+[m[32mformulon.lorentz_factor(v=2.5e8)                           # relativistic gamma[m
+[32m+[m[32mformulon.legendre_polynomial(n=2, x=0.5)                   # -0.125[m
+ [m
+[31m-Free to use, modify, and distribute[m
+[32m+[m[32m# Optional: quantum computing extension[m
+[32m+[m[32mfrom formulon.quantum_computing import qiskit_circuits as qc[m
+ [m
+[31m-Permitted for commercial and academic use[m
+[32m+[m[32mqc.bell_pair_probabilities()                    # {"00": 0.5, "11": 0.5}[m
+[32m+[m[32mqc.legendre_quantum_kernel(0.2, 0.8, degree=3)  # fidelity kernel in [0, 1][m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📦 Project Architecture[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32msrc/formulon/[m
+[32m+[m[32m├── __init__.py                # Package namespace constructor[m
+[32m+[m[32m├── __about__.py                # Dynamic version registry (Hatch)[m
+[32m+[m[32m├── validator.py                # Physical-bounds validation & error handling[m
+[32m+[m[32m├── classicalmechanics.py       # Kinematics, dynamics, rotational mechanics (60 fns)[m
+[32m+[m[32m├── electromagnetism.py         # Electrostatics, magnetostatics, circuits (49 fns)[m
+[32m+[m[32m├── wavedynamics.py             # Wave mechanics, acoustics, ray optics (33 fns)[m
+[32m+[m[32m├── mathematicalphysics.py      # Fourier analysis, vector calculus, special functions (23 fns)[m
+[32m+[m[32m├── thermodynamics.py           # Thermal expansion, kinetic theory, cycles (23 fns)[m
+[32m+[m[32m├── modernphysics.py            # Special relativity, quantum mechanics, nuclear decay (18 fns)[m
+[32m+[m[32m├── fluidmechanics.py           # Fluid statics/dynamics (17 fns)[m
+[32m+[m[32m├── mathematicalseries.py       # Numba-accelerated series & sequences (9 fns)[m
+[32m+[m[32m└── quantum_computing/          # OPTIONAL -- not imported by default[m
+[32m+[m[32m    ├── qiskit_circuits.py      # Bell pairs, Legendre feature map/kernel, QFT, Grover[m
+[32m+[m[32m    └── pennylane_circuits.py   # Legendre feature map/kernel, VQE-style ansatz, gradients[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m---[m
+ [m
+[31m-Provided without warranty[m
+[32m+[m[32m## 🧪 Testing[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mpip install -e ".[quantum]"[m
+[32m+[m[32mpytest --cov[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mQuantum tests are automatically skipped (not failed) if Qiskit/PennyLane aren't installed.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## License[m
+[32m+[m
+[32m+[m[32mApache License 2.0. See [LICENSE](LICENSE).[m
+[32m+[m
+[32m+[m[32m---[m
+ [m
+[31m-Full license text:[m
+[31m-https://spdx.org/licenses/MIT.html[m
+[31m->>>>>>> 0350b6d (Welcome,Im born now)[m
+[32m+[m[32mDeveloped by SRI KALEESWARAR S, a Physics postgraduate student from India. Thanks to my professors at Scott Christian College, with special mention to Kaniyam.com and Open Science Labs.[m
+[1mdiff --git a/pyproject.toml b/pyproject.toml[m
+[1mindex df4e814..d988731 100644[m
+[1m--- a/pyproject.toml[m
+[1m+++ b/pyproject.toml[m
+[36m@@ -3,34 +3,42 @@[m [mrequires = ["hatchling"][m
+ build-backend = "hatchling.build"[m
+ [m
+ [project][m
+[31m-name = "formulon"[m
+[32m+[m[32mname = "formulon-physics"[m
+ dynamic = ["version"][m
+[31m-description = "An open-source Python library offering classical physics formulas with automatic input validation and NumPy support."[m
+[32m+[m[32mdescription = "An optimized open-source computational library for high-performance mathematical and physical formulas."[m
+ readme = "README.md"[m
+[31m-requires-python = ">=3.8"[m
+[31m-license = { text = "MIT" }[m
+[31m-keywords = ["physics", "formulas", "science", "education", "numpy"][m
+[32m+[m[32mrequires-python = ">=3.10"[m
+[32m+[m[32mlicense = { text = "Apache-2.0" }[m
+[32m+[m[32mkeywords = ["physics", "formulas", "science", "education", "numpy", "scipy", "numba"][m
+ authors = [[m
+   { name = "SRIKALEESWARAR-S", email = "srikaleeswarar675@gmail.com" },[m
+ ][m
+ classifiers = [[m
+   "Development Status :: 4 - Beta",[m
+   "Intended Audience :: Education",[m
+[31m-  "License :: OSI Approved :: MIT License",[m
+[32m+[m[32m  "Intended Audience :: Science/Research",[m
+[32m+[m[32m  "License :: OSI Approved :: Apache Software License",[m
+[32m+[m[32m  "Operating System :: POSIX :: Linux",[m
+   "Programming Language :: Python",[m
+   "Programming Language :: Python :: 3",[m
+[31m-  "Programming Language :: Python :: 3.8",[m
+[31m-  "Programming Language :: Python :: 3.9",[m
+   "Programming Language :: Python :: 3.10",[m
+   "Programming Language :: Python :: 3.11",[m
+   "Programming Language :: Python :: 3.12",[m
+   "Programming Language :: Python :: Implementation :: CPython",[m
+[31m-  "Programming Language :: Python :: Implementation :: PyPy",[m
+[32m+[m[32m  "Topic :: Scientific/Engineering :: Physics",[m
+[32m+[m[32m  "Topic :: Scientific/Engineering :: Mathematics",[m
+ ][m
+ dependencies = [[m
+[31m-  "numpy>=1.20",[m
+[32m+[m[32m  "numpy>=1.22.0",[m
+[32m+[m[32m  "scipy>=1.8.0",[m
+[32m+[m[32m  "numba>=0.56.0",[m
+ ][m
+ [m
+[32m+[m[32m[project.optional-dependencies][m
+[32m+[m[32mqiskit = ["qiskit>=1.0"][m
+[32m+[m[32mpennylane = ["pennylane>=0.35"][m
+[32m+[m[32mquantum = ["formulon-physics[qiskit,pennylane]"][m
+[32m+[m
+ [project.urls][m
+ Documentation = "https://github.com/SRIKALEESWARAR-S/formulon#readme"[m
+ Issues = "https://github.com/SRIKALEESWARAR-S/formulon/issues"[m
+[36m@@ -53,7 +61,7 @@[m [mbranch = true[m
+ parallel = true[m
+ omit = [[m
+   "src/formulon/__about__.py",[m
+[31m-][m
+[32m+[m[32m ][m
+ [m
+ [tool.coverage.paths][m
+ formulon = ["src/formulon", "*/formulon/src/formulon"][m
+[36m@@ -65,4 +73,3 @@[m [mexclude_lines = [[m
+   "if __name__ == .__main__.:",[m
+   "if TYPE_CHECKING:",[m
+ ][m
+[31m-[m
+[1mdiff --git a/src/formulon/__about__.py b/src/formulon/__about__.py[m
+[1mindex b04d100..be343a4 100644[m
+[1m--- a/src/formulon/__about__.py[m
+[1m+++ b/src/formulon/__about__.py[m
+[36m@@ -1,4 +1,4 @@[m
+ # SPDX-FileCopyrightText: 2026-present SRIKALEESWARAR-S <srikaleeswarar675@gmail.com>[m
+ #[m
+[31m-# SPDX-License-Identifier: MIT[m
+[31m-__version__ = "0.0.1"[m
+[32m+[m[32m# SPDX-License-Identifier: Apache-2.0[m
+[32m+[m[32m__version__ = "0.6.0"[m
+[1mdiff --git a/src/formulon/__init__.py b/src/formulon/__init__.py[m
+[1mindex a0c466b..ea995a8 100644[m
+[1m--- a/src/formulon/__init__.py[m
+[1m+++ b/src/formulon/__init__.py[m
+[36m@@ -1,23 +1,36 @@[m
+ # SPDX-FileCopyrightText: 2026-present SRIKALEESWARAR-S <srikaleeswarar675@gmail.com>[m
+ #[m
+[31m-# SPDX-License-Identifier: MIT[m
+[32m+[m[32m# SPDX-License-Identifier: Apache-2.0[m
+ """[m
+ formulon[m
+ ========[m
+ [m
+[31m-An open-source Python library providing classical physics formulas with[m
+[32m+[m[32mAn open-source Python library providing physics formulas with[m
+ automatic input validation and NumPy support.[m
+ [m
+ Designed for educational, scientific, and engineering use.[m
+[32m+[m
+[32m+[m[32mAn optional quantum-computing extension (Qiskit- and PennyLane-backed[m
+[32m+[m[32mcircuit demos, including a Legendre-polynomial quantum feature map/kernel)[m
+[32m+[m[32mlives in `formulon.quantum_computing` and is NOT imported here -- see that[m
+[32m+[m[32msubpackage's docstring for installation instructions.[m
+ """[m
+ [m
+ from .__about__ import __version__[m
+ [m
+ # --- Public physics formula modules ---[m
+[31m-from .classicalphysics import *[m
+[32m+[m[32mfrom .classicalmechanics import *[m
+[32m+[m[32mfrom .wavedynamics import *[m
+[32m+[m[32mfrom .thermodynamics import *[m
+[32m+[m[32mfrom .modernphysics import *[m
+[32m+[m[32mfrom .mathematicalphysics import *[m
+[32m+[m[32mfrom .electromagnetism import *[m
+[32m+[m[32mfrom .fluidmechanics import *[m
+[32m+[m[32mfrom .mathematicalseries import *[m
+ [m
+ # --- Public API ---[m
+[31m-__all__ = [[m
+[31m-    "__version__",[m
+[31m-][m
+[32m+[m[32m# Module-level star imports above populate the package namespace.[m
+[32m+[m[32m# Keep __version__ explicitly public; imported formula names remain available[m
+[32m+[m[32m# as attributes of the package.[m
+[32m+[m[32m__all__ = [name for name in globals() if not name.startswith("_")][m
+ [m
