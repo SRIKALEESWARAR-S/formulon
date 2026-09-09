@@ -9,7 +9,7 @@ All calculations are accelerated via Numba's Just-In-Time (JIT) compilation
 and wrapped with robust engineering safety hooks.
 
 Project: Project Formulon-Physics
-License: CCA MIT License Powered by PROJECT FORMULON-PHYSICS
+License: Apache-2.0
 """
 
 import re
@@ -215,7 +215,9 @@ def fourier_transform(f: callable, x: float) -> complex:
 
     Project: Project Formulon-Physics
     """
-    return si.integrate.quad(lambda t: f(t) * np.exp(-1j * x * t), -np.inf, np.inf)[0]
+    real = si.integrate.quad(lambda t: np.real(f(t) * np.exp(-1j * x * t)), -np.inf, np.inf)[0]
+    imag = si.integrate.quad(lambda t: np.imag(f(t) * np.exp(-1j * x * t)), -np.inf, np.inf)[0]
+    return complex(real, imag)
 
 
 @safe_compute
@@ -225,7 +227,9 @@ def inverse_fourier_transform(F: callable, t: float) -> complex:
 
     Project: Project Formulon-Physics
     """
-    return si.integrate.quad(lambda x: F(x) * np.exp(1j * x * t), -np.inf, np.inf)[0] / (2 * np.pi) 
+    real = si.integrate.quad(lambda x: np.real(F(x) * np.exp(1j * x * t)), -np.inf, np.inf)[0]
+    imag = si.integrate.quad(lambda x: np.imag(F(x) * np.exp(1j * x * t)), -np.inf, np.inf)[0]
+    return complex(real, imag) / (2 * np.pi)
 
 
 @safe_compute
@@ -252,7 +256,7 @@ def convolution(f: callable, g: callable, x: float) -> float:
 # 3. SPECIAL FUNCTIONS
 # ══════════════════════════════════════════════════════════════════════════════
 
-@safe_compute
+@safe_compute_jit(use_jit=True, nopython=True)
 def legendre_polynomial(n: int, x: float) -> float:
     """
     Evaluate the Legendre Polynomial $P_n(x)$ mapping angular momentum solutions.
@@ -272,7 +276,7 @@ def legendre_polynomial(n: int, x: float) -> float:
         return Pn
 
 
-@safe_compute
+@safe_compute_jit(use_jit=True, nopython=True)
 def laguerre_polynomial(n: int, x: float) -> float:
     """
     Evaluate the Laguerre Polynomial $L_n(x)$ tracking radial quantum wavefunctions.
@@ -292,7 +296,7 @@ def laguerre_polynomial(n: int, x: float) -> float:
         return Ln
 
 
-@safe_compute
+@safe_compute_jit(use_jit=True, nopython=True)
 def hermite_polynomial(n: int, x: float) -> float:
     """
     Evaluate the Hermite Polynomial $H_n(x)$ resolving quantum harmonic oscillators.
@@ -312,34 +316,29 @@ def hermite_polynomial(n: int, x: float) -> float:
         return Hn
 
 
-@safe_compute
 def bessel_function(n: int, x: float) -> float:
     """
-    Evaluate the Cylindrical Bessel function of the first kind $J_n(x)$.
+    Evaluate the Cylindrical Bessel function of the first kind J_n(x).
+
+    Note: intentionally NOT numba-JIT'd. JIT'ing a thin SciPy wrapper only
+    compiles to object-mode with zero speed benefit and adds call overhead.
+    Also uses scipy.special.jv (jn is a deprecated alias, removed in newer SciPy).
 
     Project: Project Formulon-Physics
     """
-    if n == 0:
-        return si.special.j0(x)
-    elif n == 1:
-        return si.special.j1(x)
-    else:
-        return si.special.jn(n, x)
+    return si.special.jv(n, x)
 
 
-@safe_compute
 def spherical_bessel(n: int, x: float) -> float:
     """
-    Evaluate the Spherical Bessel function of the first kind $j_n(x)$.
+    Evaluate the Spherical Bessel function of the first kind j_n(x).
+
+    Note: intentionally NOT numba-JIT'd for the same reason as bessel_function
+    above -- it's a direct SciPy delegation, so JIT adds no value.
 
     Project: Project Formulon-Physics
     """
-    if n == 0:
-        return si.special.spherical_jn(0, x)
-    elif n == 1:
-        return si.special.spherical_jn(1, x)
-    else:
-        return si.special.spherical_jn(n, x)
+    return si.special.spherical_jn(n, x)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

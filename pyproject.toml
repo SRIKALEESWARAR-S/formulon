@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "formulon-physics"
 dynamic = ["version"]
-description = "An optimized open-source computational library for high-performance mathematical and physical formulas."
+description = "Open-source computational physics library with validated formulas and optional quantum-computing tools."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -32,12 +32,15 @@ dependencies = [
   "numpy>=1.22.0",
   "scipy>=1.8.0",
   "numba>=0.56.0",
+  "pint>=0.24.0",
 ]
 
 [project.optional-dependencies]
 qiskit = ["qiskit>=1.0"]
 pennylane = ["pennylane>=0.35"]
-quantum = ["formulon-physics[qiskit,pennylane]"]
+units = ["pint>=0.24.0"]
+quantum = ["qiskit>=1.0", "pennylane>=0.35"]
+all = ["pint>=0.24.0", "qiskit>=1.0", "pennylane>=0.35"]
 
 [project.urls]
 Documentation = "https://github.com/SRIKALEESWARAR-S/formulon#readme"

@@ -8,12 +8,12 @@ All formulations are validated prior to execution using physical boundary constr
 and protected against runtime anomalies via the external validators framework.
 
 Project: Project Formulon-Physics
-License: MIT License
+License: Apache-2.0
 """
 
 import math
 from typing import Tuple
-from validators import validate, RULES, validate_cross_param_le
+from .validator import validate, RULES, validate_cross_param_le
 
 __all__ = [
     # 1. Simple Harmonic Motion (SHM)
@@ -61,7 +61,7 @@ __all__ = [
 
 @validate(omega=RULES.ANGULAR_FREQUENCY, x=RULES.DISPLACEMENT)
 def shm_acceleration_from_displacement(omega: float, x: float) -> float:
-    """
+    r"""
     Calculate SHM acceleration directly from the differential equation constraint ($a = -\omega^2 x$).
 
     Project: Project Formulon-Physics
@@ -71,7 +71,7 @@ def shm_acceleration_from_displacement(omega: float, x: float) -> float:
 
 @validate(amplitude=RULES.AMPLITUDE, omega=RULES.ANGULAR_FREQUENCY, t=RULES.NON_NEG_TIME, phi_rad=RULES.REAL)
 def shm_displacement(amplitude: float, omega: float, t: float, phi_rad: float) -> float:
-    """
+    r"""
     Calculate system displacement tracking position state in SHM ($x(t) = A \cos(\omega t + \phi)$).
 
     Project: Project Formulon-Physics
@@ -81,7 +81,7 @@ def shm_displacement(amplitude: float, omega: float, t: float, phi_rad: float) -
 
 @validate(amplitude=RULES.AMPLITUDE, omega=RULES.ANGULAR_FREQUENCY, t=RULES.NON_NEG_TIME, phi_rad=RULES.REAL)
 def shm_velocity(amplitude: float, omega: float, t: float, phi_rad: float) -> float:
-    """
+    r"""
     Calculate structural phase space velocity tracking in SHM ($v(t) = -A \omega \sin(\omega t + \phi)$).
 
     Project: Project Formulon-Physics
@@ -91,7 +91,7 @@ def shm_velocity(amplitude: float, omega: float, t: float, phi_rad: float) -> fl
 
 @validate(omega=RULES.ANGULAR_FREQUENCY, amplitude=RULES.AMPLITUDE, x=RULES.DISPLACEMENT)
 def shm_velocity_from_displacement(omega: float, amplitude: float, x: float) -> float:
-    """
+    r"""
     Calculate the velocity magnitude given a localized spatial displacement coordinate ($v = \pm\omega\sqrt{A^2 - x^2}$).
 
     Project: Project Formulon-Physics
@@ -102,7 +102,7 @@ def shm_velocity_from_displacement(omega: float, amplitude: float, x: float) -> 
 
 @validate(amplitude=RULES.AMPLITUDE, omega=RULES.ANGULAR_FREQUENCY, t=RULES.NON_NEG_TIME, phi_rad=RULES.REAL)
 def shm_acceleration(amplitude: float, omega: float, t: float, phi_rad: float) -> float:
-    """
+    r"""
     Calculate dynamic structural linear acceleration tracking in SHM ($a(t) = -A \omega^2 \cos(\omega t + \phi)$).
 
     Project: Project Formulon-Physics
@@ -112,7 +112,7 @@ def shm_acceleration(amplitude: float, omega: float, t: float, phi_rad: float) -
 
 @validate(k=RULES.SPRING_CONST, mass=RULES.MASS)
 def spring_angular_frequency(k: float, mass: float) -> float:
-    """
+    r"""
     Evaluate structural natural angular frequency for ideal elastic spring systems ($\omega = \sqrt{k/m}$).
 
     Project: Project Formulon-Physics
@@ -122,7 +122,7 @@ def spring_angular_frequency(k: float, mass: float) -> float:
 
 @validate(mass=RULES.MASS, k=RULES.SPRING_CONST)
 def spring_period(mass: float, k: float) -> float:
-    """
+    r"""
     Calculate natural structural oscillation time period of an elastic spring model ($T = 2\pi\sqrt{m/k}$).
 
     Project: Project Formulon-Physics
@@ -132,7 +132,7 @@ def spring_period(mass: float, k: float) -> float:
 
 @validate(length=RULES.DISTANCE, g=RULES.GRAVITY)
 def pendulum_period(length: float, g: float) -> float:
-    """
+    r"""
     Calculate the small-angle time oscillation period of an idealized simple pendulum ($T = 2\pi\sqrt{L/g}$).
 
     Project: Project Formulon-Physics
@@ -142,7 +142,7 @@ def pendulum_period(length: float, g: float) -> float:
 
 @validate(i=RULES.MOMENT_OF_INERTIA, mass=RULES.MASS, g=RULES.GRAVITY, d=RULES.DISTANCE)
 def physical_pendulum_period(i: float, mass: float, g: float, d: float) -> float:
-    """
+    r"""
     Evaluate mechanical oscillation periods for rigid distributed physical pendulum systems ($T = 2\pi\sqrt{I / (mgd)}$).
 
     Project: Project Formulon-Physics
@@ -166,7 +166,7 @@ def shm_total_energy(k: float, amplitude: float) -> float:
 
 @validate(frequency=RULES.FREQUENCY, wavelength=RULES.WAVELENGTH)
 def wave_speed(frequency: float, wavelength: float) -> float:
-    """
+    r"""
     Calculate characteristic phase velocity propagation speeds ($v = f \lambda$).
 
     Project: Project Formulon-Physics
@@ -176,7 +176,7 @@ def wave_speed(frequency: float, wavelength: float) -> float:
 
 @validate(wavelength=RULES.WAVELENGTH)
 def wave_number(wavelength: float) -> float:
-    """
+    r"""
     Calculate spatial propagation angular wavenumber constraints ($k = 2\pi / \lambda$).
 
     Project: Project Formulon-Physics
@@ -186,7 +186,7 @@ def wave_number(wavelength: float) -> float:
 
 @validate(tension=RULES.FORCE, linear_density=RULES.LINEAR_DENSITY)
 def string_wave_speed(tension: float, linear_density: float) -> float:
-    """
+    r"""
     Evaluate structural transverse elastic wave transmission speeds sustained across ideal strings ($v = \sqrt{T/\mu}$).
 
     Project: Project Formulon-Physics
@@ -196,7 +196,7 @@ def string_wave_speed(tension: float, linear_density: float) -> float:
 
 @validate(gamma=RULES.ADIABATIC_INDEX, r_gas=RULES.GAS_CONSTANT, temperature=RULES.TEMPERATURE, molar_mass=RULES.MOLAR_MASS)
 def gas_sound_speed(gamma: float, r_gas: float, temperature: float, molar_mass: float) -> float:
-    """
+    r"""
     Predict acoustic compression wave velocities inside gases using Laplace's formulation ($v = \sqrt{\gamma R T / M}$).
 
     Project: Project Formulon-Physics
@@ -206,7 +206,7 @@ def gas_sound_speed(gamma: float, r_gas: float, temperature: float, molar_mass: 
 
 @validate(intensity=RULES.SOUND_INTENSITY, base_intensity=RULES.SOUND_INTENSITY_BASE)
 def sound_intensity_level(intensity: float, base_intensity: float) -> float:
-    """
+    r"""
     Translate pure surface vector acoustic fluxes into standard decibel scaling metrics ($\beta = 10 \log_{10}(I / I_0)$).
 
     Project: Project Formulon-Physics
@@ -217,7 +217,7 @@ def sound_intensity_level(intensity: float, base_intensity: float) -> float:
 @validate(f_source=RULES.FREQUENCY, v_medium=RULES.SPEED, v_observer=RULES.SPEED, v_source=RULES.SPEED)
 def doppler_effect(f_source: float, v_medium: float, v_observer: float, v_source: float, 
                    observer_moving_towards: bool, source_moving_towards: bool) -> float:
-    """
+    r"""
     Calculate observed shifting frequencies matching relative motion kinematics under the Doppler phenomenon.
 
     $f' = f \left(\frac{v \pm v_o}{v \mp v_s}\right)$
@@ -296,7 +296,7 @@ def snells_law_angle(n1: float, n2: float, theta1_deg: float) -> float:
 
 @validate(n1=RULES.REFRACTIVE_INDEX, n2=RULES.REFRACTIVE_INDEX)
 def critical_angle(n1: float, n2: float) -> float:
-    """
+    r"""
     Isolate exact total internal reflection threshold angle points across interface boundaries ($\theta_c = \sin^{-1}(n_2 / n_1)$).
 
     Project: Project Formulon-Physics
@@ -337,7 +337,7 @@ def thin_lens_relation(u_obj: float, v_img: float) -> float:
 
 @validate(n_lens=RULES.REFRACTIVE_INDEX, n_medium=RULES.REFRACTIVE_INDEX, r1=RULES.REAL, r2=RULES.REAL)
 def lens_makers_equation(n_lens: float, n_medium: float, r1: float, r2: float) -> float:
-    """
+    r"""
     Evaluate structural focal parameters matching lens surface curvature indices via the Lens Maker formulation.
 
     $\frac{1}{f} = \left(\frac{n_{lens}}{n_{medium}} - 1\right)\left(\frac{1}{R_1} - \frac{1}{R_2}\right)$
@@ -392,7 +392,7 @@ def lens_magnification(u_obj: float, v_img: float) -> float:
 
 @validate(i0=RULES.SOUND_INTENSITY, theta_deg=RULES.ANGLE_DEG)
 def malus_law(i0: float, theta_deg: float) -> float:
-    """
+    r"""
     Measure transmission flux reduction parameters crossing polarization planes via Malus's Law ($I = I_0 \cos^2\theta$).
 
     Project: Project Formulon-Physics
@@ -412,7 +412,7 @@ def brewsters_angle(n1: float, n2: float) -> float:
 
 @validate(wavelength=RULES.WAVELENGTH, d_screen=RULES.DISTANCE, d_slits=RULES.DISTANCE)
 def double_slit_fringe_width(wavelength: float, d_screen: float, d_slits: float) -> float:
-    """
+    r"""
     Calculate spatial interference fringe track separation width in Young's interference models ($\beta = \lambda D / d$).
 
     Project: Project Formulon-Physics
@@ -422,7 +422,7 @@ def double_slit_fringe_width(wavelength: float, d_screen: float, d_slits: float)
 
 @validate(slit_width_a=RULES.DISTANCE, order_m=RULES.REAL, wavelength=RULES.WAVELENGTH)
 def single_slit_diffraction_angle(slit_width_a: float, order_m: float, wavelength: float) -> float:
-    """
+    r"""
     Evaluate structural minimum diffraction dispersion vectors under single slit footprints ($a \sin\theta = m\lambda$).
 
     Project: Project Formulon-Physics
@@ -435,7 +435,7 @@ def single_slit_diffraction_angle(slit_width_a: float, order_m: float, wavelengt
 
 @validate(wavelength=RULES.WAVELENGTH, aperture_diameter_d=RULES.DISTANCE)
 def rayleigh_criterion(wavelength: float, aperture_diameter_d: float) -> float:
-    """
+    r"""
     Determine maximum angular resolution limits bounded under diffraction metrics ($\theta_{min} = 1.22 \lambda / D$).
 
     Project: Project Formulon-Physics

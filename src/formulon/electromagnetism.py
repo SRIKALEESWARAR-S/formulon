@@ -8,13 +8,13 @@ All formulations are validated prior to execution using physical boundary constr
 and protected against runtime anomalies via the external validators framework.
 
 Project: Project Formulon-Physics
-License: MIT License
+License: Apache-2.0
 """
 
 import math
 from typing import Callable, Tuple
 import scipy.integrate as integrate
-from validators import validate, RULES, validate_cross_param_le
+from .validator import validate, RULES, validate_cross_param_le
 
 __all__ = [
     # 1. Electrostatics
@@ -67,6 +67,7 @@ __all__ = [
     "inductive_reactance",
     "capacitive_reactance",
     "resonant_frequency",
+    "resonant_angular_frequency",
     # 6. Maxwell's Equations & EM Waves
     "maxwell_ampere_displacement_current",
     "em_wave_speed_vacuum",
@@ -86,7 +87,7 @@ C_SPEED_LIGHT = 299792458
 
 @validate(q1=RULES.REAL, q2=RULES.REAL, r=RULES.RADIUS)
 def coulomb_force(q1: float, q2: float, r: float) -> float:
-    """
+    r"""
     Calculate electrostatic attraction or repulsion force between localized charges ($F = \\frac{1}{4\\pi\\epsilon_0}\\frac{q_1 q_2}{r^2}$).
 
     Project: Project Formulon-Physics
@@ -106,7 +107,7 @@ def electric_field_strength(force: float, charge: float) -> float:
 
 @validate(q=RULES.REAL, r=RULES.RADIUS)
 def point_charge_electric_field(q: float, r: float) -> float:
-    """
+    r"""
     Evaluate point source electric fields matching radial isolation tracking scales ($E = \\frac{1}{4\\pi\\epsilon_0}\\frac{q}{r^2}$).
 
     Project: Project Formulon-Physics
@@ -116,7 +117,7 @@ def point_charge_electric_field(q: float, r: float) -> float:
 
 @validate(area=RULES.AREA, theta_deg=RULES.ANGLE_DEG)
 def electric_flux(field_func: Callable[[float, float], float], area: float, theta_deg: float) -> float:
-    """
+    r"""
     Evaluate static electric surface field flux metrics across simple planar window bounds ($\Phi_E = E A \\cos\\theta$).
 
     Project: Project Formulon-Physics
@@ -128,7 +129,7 @@ def electric_flux(field_func: Callable[[float, float], float], area: float, thet
 
 @validate(q_encl=RULES.REAL)
 def gauss_law_enclosed_charge(q_encl: float) -> float:
-    """
+    r"""
     Determine net surface field flux matching enclosed boundary charge profiles via Gauss's model ($\Phi_E = Q_{encl}/\\epsilon_0$).
 
     Project: Project Formulon-Physics
@@ -138,7 +139,7 @@ def gauss_law_enclosed_charge(q_encl: float) -> float:
 
 @validate(q1=RULES.REAL, q2=RULES.REAL, r=RULES.RADIUS)
 def electric_potential_energy(q1: float, q2: float, r: float) -> float:
-    """
+    r"""
     Evaluate conservation electrostatic binding potential energy metrics ($U = \\frac{1}{4\\pi\\epsilon_0}\\frac{q_1 q_2}{r}$).
 
     Project: Project Formulon-Physics
@@ -157,7 +158,7 @@ def electric_potential(energy: float, charge: float) -> float:
 
 
 def electric_potential_from_field(field_func: Callable[[float], float], l_start: float, l_end: float) -> float:
-    """
+    r"""
     Integrate electric vector fields determining potential transitions down line paths ($V = -\\int E \\cdot dl$).
 
     Project: Project Formulon-Physics
@@ -179,7 +180,7 @@ def electric_dipole_moment(charge: float, separation_d: float) -> float:
 
 @validate(moment_p=RULES.REAL, field_e=RULES.REAL, theta_deg=RULES.ANGLE_DEG)
 def torque_on_electric_dipole(moment_p: float, field_e: float, theta_deg: float) -> float:
-    """
+    r"""
     Calculate rotational mechanical moments applied across charge pairs inside static tracking fields ($\\tau = p E \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -189,7 +190,7 @@ def torque_on_electric_dipole(moment_p: float, field_e: float, theta_deg: float)
 
 @validate(moment_p=RULES.REAL, field_e=RULES.REAL, theta_deg=RULES.ANGLE_DEG)
 def potential_energy_of_electric_dipole(moment_p: float, field_e: float, theta_deg: float) -> float:
-    """
+    r"""
     Evaluate configuration orientation energetic metrics for electrical dipoles ($U = -p E \\cos\\theta$).
 
     Project: Project Formulon-Physics
@@ -213,7 +214,7 @@ def capacitance(charge: float, voltage: float) -> float:
 
 @validate(plate_area_a=RULES.AREA, separation_d=RULES.DISTANCE)
 def parallel_plate_capacitance(plate_area_a: float, separation_d: float) -> float:
-    """
+    r"""
     Evaluate structural metrics calculating capacities across geometric sheets ($C = \\epsilon_0 A / d$).
 
     Project: Project Formulon-Physics
@@ -223,7 +224,7 @@ def parallel_plate_capacitance(plate_area_a: float, separation_d: float) -> floa
 
 @validate(dielectric_kappa=RULES.DIELECTRIC_CONSTANT, c_vacuum=RULES.REAL)
 def dielectric_capacitance(dielectric_kappa: float, c_vacuum: float) -> float:
-    """
+    r"""
     Scale baseline charge storage capacities using material dielectric properties ($C = \\kappa C_0$).
 
     Project: Project Formulon-Physics
@@ -232,7 +233,7 @@ def dielectric_capacitance(dielectric_kappa: float, c_vacuum: float) -> float:
 
 
 def capacitors_series_equivalent(capacitances: list[float]) -> float:
-    """
+    r"""
     Calculate composite series capacity equivalence parameters ($\\frac{1}{C_{eq}} = \\sum \\frac{1}{C_i}$).
 
     Project: Project Formulon-Physics
@@ -248,7 +249,7 @@ def capacitors_series_equivalent(capacitances: list[float]) -> float:
 
 
 def capacitors_parallel_equivalent(capacitances: list[float]) -> float:
-    """
+    r"""
     Sum capacity configurations matching parallel electrical pathways ($C_{eq} = \\sum C_i$).
 
     Project: Project Formulon-Physics
@@ -265,7 +266,7 @@ def capacitors_parallel_equivalent(capacitances: list[float]) -> float:
 
 @validate(c=RULES.REAL, voltage=RULES.VOLTAGE)
 def capacitor_stored_energy(c: float, voltage: float) -> float:
-    """
+    r"""
     Measure conservation electrostatic work thresholds stacked inside charged fields ($U = \\frac{1}{2}C V^2$).
 
     Project: Project Formulon-Physics
@@ -275,7 +276,7 @@ def capacitor_stored_energy(c: float, voltage: float) -> float:
 
 @validate(field_e=RULES.REAL)
 def electric_field_energy_density(field_e: float) -> float:
-    """
+    r"""
     Evaluate localized specific electric potential energy density metrics ($u_E = \\frac{1}{2}\\epsilon_0 E^2$).
 
     Project: Project Formulon-Physics
@@ -289,7 +290,7 @@ def electric_field_energy_density(field_e: float) -> float:
 
 @validate(charge=RULES.REAL, velocity=RULES.SPEED, field_b=RULES.MAGNETIC_FIELD, theta_deg=RULES.ANGLE_DEG)
 def lorentz_magnetic_force(charge: float, velocity: float, field_b: float, theta_deg: float) -> float:
-    """
+    r"""
     Measure structural magnetic deflection vectors handling moving points via Lorentz limits ($F = q v B \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -299,7 +300,7 @@ def lorentz_magnetic_force(charge: float, velocity: float, field_b: float, theta
 
 @validate(current=RULES.CURRENT, length=RULES.DISTANCE, field_b=RULES.MAGNETIC_FIELD, theta_deg=RULES.ANGLE_DEG)
 def wire_magnetic_force(current: float, length: float, field_b: float, theta_deg: float) -> float:
-    """
+    r"""
     Calculate composite deflection load distributions sustained over conductive wires ($F = I L B \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -309,7 +310,7 @@ def wire_magnetic_force(current: float, length: float, field_b: float, theta_deg
 
 @validate(current=RULES.CURRENT, length_dl=RULES.DISTANCE, r=RULES.RADIUS, theta_deg=RULES.ANGLE_DEG)
 def biot_savart_magnitude(current: float, length_dl: float, r: float, theta_deg: float) -> float:
-    """
+    r"""
     Predict differential flux density tracking metrics utilizing the Biot-Savart equation ($dB = \\frac{\\mu_0}{4\\pi}\\frac{I dl \\sin\\theta}{r^2}$).
 
     Project: Project Formulon-Physics
@@ -320,7 +321,7 @@ def biot_savart_magnitude(current: float, length_dl: float, r: float, theta_deg:
 
 @validate(i_encl=RULES.CURRENT)
 def amperes_law_enclosed_current(i_encl: float) -> float:
-    """
+    r"""
     Evaluate circulation loop limits given enclosed structural currents via Ampere's law ($\oint B \\cdot dl = \\mu_0 I_{encl}$).
 
     Project: Project Formulon-Physics
@@ -330,7 +331,7 @@ def amperes_law_enclosed_current(i_encl: float) -> float:
 
 @validate(current=RULES.CURRENT, r=RULES.RADIUS)
 def straight_wire_magnetic_field(current: float, r: float) -> float:
-    """
+    r"""
     Evaluate induced field vectors matching infinite linear current lines ($B = \\frac{\\mu_0 I}{2\\pi r}$).
 
     Project: Project Formulon-Physics
@@ -340,7 +341,7 @@ def straight_wire_magnetic_field(current: float, r: float) -> float:
 
 @validate(turns_per_meter_n=RULES.TURNS_PER_LENGTH, current=RULES.CURRENT)
 def solenoid_magnetic_field(turns_per_meter_n: float, current: float) -> float:
-    """
+    r"""
     Predict internal uniform magnetic field layers inside long structural solenoids ($B = \\mu_0 n I$).
 
     Project: Project Formulon-Physics
@@ -350,7 +351,7 @@ def solenoid_magnetic_field(turns_per_meter_n: float, current: float) -> float:
 
 @validate(turns_n=RULES.NON_NEGATIVE, current=RULES.CURRENT, area=RULES.AREA)
 def magnetic_dipole_moment(turns_n: int, current: float, area: float) -> float:
-    """
+    r"""
     Determine tracking loop magnetic vector moments ($\mu = N I A$).
 
     Project: Project Formulon-Physics
@@ -360,7 +361,7 @@ def magnetic_dipole_moment(turns_n: int, current: float, area: float) -> float:
 
 @validate(moment_mu=RULES.REAL, field_b=RULES.MAGNETIC_FIELD, theta_deg=RULES.ANGLE_DEG)
 def torque_on_magnetic_dipole(moment_mu: float, field_b: float, theta_deg: float) -> float:
-    """
+    r"""
     Measure twisting mechanics acting across loop moment distributions inside field parameters ($\\tau = \\mu B \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -374,7 +375,7 @@ def torque_on_magnetic_dipole(moment_mu: float, field_b: float, theta_deg: float
 
 @validate(delta_q=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def electric_current(delta_q: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate standard macroscopic charge transit flow rates ($I = \\Delta q / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -404,7 +405,7 @@ def ohms_law_voltage(current: float, resistance: float) -> float:
 
 @validate(resistivity_rho=RULES.RESISTIVITY, length=RULES.DISTANCE, area=RULES.AREA)
 def resistance_from_resistivity(resistivity_rho: float, length: float, area: float) -> float:
-    """
+    r"""
     Translate uniform material property parameters into absolute component resistances ($R = \\rho L / A$).
 
     Project: Project Formulon-Physics
@@ -414,7 +415,7 @@ def resistance_from_resistivity(resistivity_rho: float, length: float, area: flo
 
 @validate(r0=RULES.RESISTANCE, alpha_coefficient=RULES.REAL, delta_t=RULES.REAL)
 def temperature_dependent_resistance(r0: float, alpha_coefficient: float, delta_t: float) -> float:
-    """
+    r"""
     Evaluate linear tracking thermal mutations across component resistance steps ($R(T) = R_0[1 + \\alpha \\Delta T]$).
 
     Project: Project Formulon-Physics
@@ -426,7 +427,7 @@ def temperature_dependent_resistance(r0: float, alpha_coefficient: float, delta_
 
 
 def resistors_series_equivalent(resistances: list[float]) -> float:
-    """
+    r"""
     Sum resistances across continuous series circuit paths ($R_{eq} = \\sum R_i$).
 
     Project: Project Formulon-Physics
@@ -442,7 +443,7 @@ def resistors_series_equivalent(resistances: list[float]) -> float:
 
 
 def resistors_parallel_equivalent(resistances: list[float]) -> float:
-    """
+    r"""
     Calculate composite parallel pathway network resistance footprints ($\\frac{1}{R_{eq}} = \\sum \\frac{1}{R_i}$).
 
     Project: Project Formulon-Physics
@@ -473,7 +474,7 @@ def joule_heating_power(voltage: float, current: float) -> float:
 
 @validate(area=RULES.AREA, theta_deg=RULES.ANGLE_DEG)
 def magnetic_flux(field_func: Callable[[float, float], float], area: float, theta_deg: float) -> float:
-    """
+    r"""
     Measure surface induction flux profiles scaling vector intersections ($\Phi_B = B A \\cos\\theta$).
 
     Project: Project Formulon-Physics
@@ -484,7 +485,7 @@ def magnetic_flux(field_func: Callable[[float, float], float], area: float, thet
 
 @validate(delta_flux_b=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def faradays_induction_emf(delta_flux_b: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate induced electromotive potentials tracking flux changes via Faraday's framework ($\\mathcal{E} = -\\Delta\Phi_B / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -494,7 +495,7 @@ def faradays_induction_emf(delta_flux_b: float, delta_t: float) -> float:
 
 @validate(field_b=RULES.MAGNETIC_FIELD, length=RULES.DISTANCE, velocity=RULES.SPEED)
 def motional_emf(field_b: float, length: float, velocity: float) -> float:
-    """
+    r"""
     Calculate kinetic potential distributions driven along conductors cutting tracking fields ($\\mathcal{E} = B L v$).
 
     Project: Project Formulon-Physics
@@ -504,7 +505,7 @@ def motional_emf(field_b: float, length: float, velocity: float) -> float:
 
 @validate(flux_b=RULES.REAL, current=RULES.CURRENT)
 def self_inductance_flux(flux_b: float, current: float) -> float:
-    """
+    r"""
     Evaluate structural induction scale invariants matching loop configurations ($L = \Phi_B / I$).
 
     Project: Project Formulon-Physics
@@ -514,7 +515,7 @@ def self_inductance_flux(flux_b: float, current: float) -> float:
 
 @validate(inductance_l=RULES.REAL, delta_i=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def inductor_induced_emf(inductance_l: float, delta_i: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate inductive reverse potential boundaries bucking active current changes ($\\mathcal{E} = -L \\frac{\\Delta I}{\\Delta t}$).
 
     Project: Project Formulon-Physics
@@ -526,7 +527,7 @@ def inductor_induced_emf(inductance_l: float, delta_i: float, delta_t: float) ->
 
 @validate(inductance_l=RULES.REAL, current=RULES.CURRENT)
 def inductor_stored_energy(inductance_l: float, current: float) -> float:
-    """
+    r"""
     Measure dynamic potential fields stored inside inductive vector arrays ($U = \\frac{1}{2}L I^2$).
 
     Project: Project Formulon-Physics
@@ -538,7 +539,7 @@ def inductor_stored_energy(inductance_l: float, current: float) -> float:
 
 @validate(field_b=RULES.MAGNETIC_FIELD)
 def magnetic_field_energy_density(field_b: float) -> float:
-    """
+    r"""
     Evaluate localized specific potential energy density fields bound within induction arrays ($u_B = B^2 / (2\\mu_0)$).
 
     Project: Project Formulon-Physics
@@ -548,7 +549,7 @@ def magnetic_field_energy_density(field_b: float) -> float:
 
 @validate(resistance=RULES.RESISTANCE, x_l=RULES.REAL, x_c=RULES.REAL)
 def rlc_series_impedance(resistance: float, x_l: float, x_c: float) -> float:
-    """
+    r"""
     Calculate net alternate phase vector network impedance tracking limits across AC systems.
 
     $Z = \\sqrt{R^2 + (X_L - X_C)^2}$
@@ -560,7 +561,7 @@ def rlc_series_impedance(resistance: float, x_l: float, x_c: float) -> float:
 
 @validate(angular_frequency_omega=RULES.ANGULAR_FREQUENCY, inductance_l=RULES.REAL)
 def inductive_reactance(angular_frequency_omega: float, inductance_l: float) -> float:
-    """
+    r"""
     Measure inductive AC tracking loop current phase block metrics ($X_L = \omega L$).
 
     Project: Project Formulon-Physics
@@ -572,7 +573,7 @@ def inductive_reactance(angular_frequency_omega: float, inductance_l: float) -> 
 
 @validate(angular_frequency_omega=RULES.ANGULAR_FREQUENCY, capacitance_c=RULES.REAL)
 def capacitive_reactance(angular_frequency_omega: float, capacitance_c: float) -> float:
-    """
+    r"""
     Measure capacitive AC tracking phase expansion block metrics ($X_C = 1 / (\omega C)$).
 
     Project: Project Formulon-Physics
@@ -583,15 +584,16 @@ def capacitive_reactance(angular_frequency_omega: float, capacitance_c: float) -
 
 
 @validate(inductance_l=RULES.REAL, capacitance_c=RULES.REAL)
-def resonant_frequency(inductance_l: float, capacitance_c: float) -> float:
-    """
-    Isolate natural phase loop tuning configurations via structural resonance constraints ($\omega_0 = 1 / \\sqrt{L C}$).
-
-    Project: Project Formulon-Physics
-    """
+def resonant_angular_frequency(inductance_l: float, capacitance_c: float) -> float:
+    """Return the LC resonant angular frequency, omega_0 = 1/sqrt(LC), in rad/s."""
     if inductance_l <= 0 or capacitance_c <= 0:
-        raise ValueError("Resonant reactive tank parameters expect real non-zero component records.")
+        raise ValueError("Inductance and capacitance must be positive.")
     return 1.0 / math.sqrt(inductance_l * capacitance_c)
+
+
+def resonant_frequency(inductance_l: float, capacitance_c: float) -> float:
+    """Return the LC resonant frequency f_0 = 1/(2*pi*sqrt(LC)), in Hz."""
+    return resonant_angular_frequency(inductance_l, capacitance_c) / (2.0 * math.pi)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -600,7 +602,7 @@ def resonant_frequency(inductance_l: float, capacitance_c: float) -> float:
 
 @validate(i_encl=RULES.CURRENT, delta_flux_e=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def maxwell_ampere_displacement_current(i_encl: float, delta_flux_e: float, delta_t: float) -> float:
-    """
+    r"""
     Evaluate continuous loop field circulations driving combined real conduction and dynamic displacement paths.
 
     $\oint B \\cdot dl = \\mu_0 \\left(I_{encl} + \\epsilon_0 \\frac{\\Delta\\Phi_E}{\\Delta t}\\right)$
@@ -612,7 +614,7 @@ def maxwell_ampere_displacement_current(i_encl: float, delta_flux_e: float, delt
 
 
 def em_wave_speed_vacuum() -> float:
-    """
+    r"""
     Return baseline structural phase propagation velocities evaluated for vacuum waves via continuum constants ($c = 1 / \\sqrt{\\mu_0 \\epsilon_0}$).
 
     Project: Project Formulon-Physics
@@ -622,7 +624,7 @@ def em_wave_speed_vacuum() -> float:
 
 @validate(field_e=RULES.REAL, field_b=RULES.MAGNETIC_FIELD)
 def poynting_vector_magnitude(field_e: float, field_b: float) -> float:
-    """
+    r"""
     Measure directional electromagnetic energy flux power transfer throughput dimensions ($S = E B / \\mu_0$).
 
     Project: Project Formulon-Physics

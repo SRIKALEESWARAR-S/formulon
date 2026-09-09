@@ -8,7 +8,7 @@ All algorithmic engines are accelerated via Numba's Just-In-Time (JIT) compilati
 and protected against resource exhaustion limits.
 
 Project: Project Formulon-Physics
-License: MIT License
+License: Apache-2.0
 """
 
 import re

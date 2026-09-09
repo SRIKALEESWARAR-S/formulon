@@ -8,11 +8,11 @@ All formulations are validated prior to execution using physical boundary constr
 and protected against runtime anomalies (singularities, domain errors).
 
 Project: Project Formulon-Physics
-License: MIT License
+License: Apache-2.0
 """
 
 import math
-from validators import validate, RULES, validate_cross_param_le
+from .validator import validate, RULES, validate_cross_param_le
 
 # Expose the public API for the PyPI package distribution
 __all__ = [
@@ -64,7 +64,7 @@ def density(mass: float, volume: float) -> float:
 
 @validate(force=RULES.FORCE, area=RULES.AREA)
 def pressure(force: float, area: float) -> float:
-    """
+    r"""
     Calculate the average perpendicular pressure acting on a surface ($P = F_\perp/A$).
 
     Project: Project Formulon-Physics
@@ -169,7 +169,7 @@ def continuity_equation(area1: float, velocity1: float, area2: float) -> float:
 def bernoullis_equation(
     p1: float, density: float, v1: float, y1: float, v2: float, y2: float, g: float
 ) -> float:
-    """
+    r"""
     Determine the local pressure at a downstream state using Bernoulli's Theorem.
 
     $P_2 = P_1 + \\frac{1}{2}\\rho(v_1^2 - v_2^2) + \\rho g(y_1 - y_2)$
@@ -205,7 +205,7 @@ def bernoullis_equation(
 
 @validate(g=RULES.GRAVITY, liquid_height=RULES.HEIGHT)
 def torricellis_law(g: float, liquid_height: float) -> float:
-    """
+    r"""
     Calculate the theoretical speed of efflux from an open sharp-edged orifice via Torricelli's Law ($v = \sqrt{2gh}$).
 
     Project: Project Formulon-Physics
@@ -227,7 +227,7 @@ def torricellis_law(g: float, liquid_height: float) -> float:
 
 @validate(density=RULES.DENSITY, flow_speed=RULES.SPEED, characteristic_length=RULES.DISTANCE, viscosity=RULES.VISCOSITY)
 def reynolds_number(density: float, flow_speed: float, characteristic_length: float, viscosity: float) -> float:
-    """
+    r"""
     Calculate the dimensionless Reynolds number evaluating fluid turbulence scales ($Re = \frac{\rho v L}{\mu}$).
 
     Project: Project Formulon-Physics
@@ -257,7 +257,7 @@ def reynolds_number(density: float, flow_speed: float, characteristic_length: fl
 
 @validate(force=RULES.FORCE, cross_sectional_area=RULES.AREA)
 def stress(force: float, cross_sectional_area: float) -> float:
-    """
+    r"""
     Calculate the internal restorative mechanical stress distribution ($\sigma = F/A$).
 
     Project: Project Formulon-Physics
@@ -279,7 +279,7 @@ def stress(force: float, cross_sectional_area: float) -> float:
 
 @validate(delta_l=RULES.DISTANCE, initial_l=RULES.DISTANCE)
 def strain(delta_l: float, initial_l: float) -> float:
-    """
+    r"""
     Calculate the structural dimensionless linear deformation strain value ($\epsilon = \Delta L / L_0$).
 
     Project: Project Formulon-Physics
@@ -303,7 +303,7 @@ def strain(delta_l: float, initial_l: float) -> float:
 
 @validate(stress=RULES.REAL, strain=RULES.REAL)
 def youngs_modulus(stress: float, strain: float) -> float:
-    """
+    r"""
     Calculate the intrinsic Young's Modulus of elasticity tracking tensile rigidity ($E = \sigma / \epsilon$).
 
     Project: Project Formulon-Physics
@@ -327,7 +327,7 @@ def youngs_modulus(stress: float, strain: float) -> float:
 
 @validate(shear_stress=RULES.REAL, shear_strain=RULES.REAL)
 def shear_modulus(shear_stress: float, shear_strain: float) -> float:
-    """
+    r"""
     Calculate the material Shear Modulus evaluation index ($G = \tau / \gamma$).
 
     Project: Project Formulon-Physics
@@ -351,7 +351,7 @@ def shear_modulus(shear_stress: float, shear_strain: float) -> float:
 
 @validate(delta_pressure=RULES.REAL, volumetric_strain=RULES.REAL)
 def bulk_modulus(delta_pressure: float, volumetric_strain: float) -> float:
-    """
+    r"""
     Calculate the intrinsic compression Bulk Modulus measuring volume elasticity resistances ($K = - \Delta P / (\Delta V / V_0)$).
 
     Project: Project Formulon-Physics
@@ -379,7 +379,7 @@ def bulk_modulus(delta_pressure: float, volumetric_strain: float) -> float:
 
 @validate(force=RULES.FORCE, perimeter_length=RULES.DISTANCE)
 def surface_tension(force: float, perimeter_length: float) -> float:
-    """
+    r"""
     Determine the acting boundary layer liquid surface tension property ($\gamma = F / L$).
 
     Project: Project Formulon-Physics
@@ -406,7 +406,7 @@ def surface_tension(force: float, perimeter_length: float) -> float:
 def capillary_rise(
     surface_tension: float, contact_angle_deg: float, tube_radius: float, fluid_density: float, g: float
 ) -> float:
-    """
+    r"""
     Predict the static capillary equilibrium tube height rise or depression level.
 
     $h = \\frac{2 \gamma \cos(\\theta)}{\\rho g r}$
@@ -443,7 +443,7 @@ def capillary_rise(
 
 @validate(viscosity=RULES.VISCOSITY, radius=RULES.RADIUS, terminal_velocity=RULES.SPEED)
 def stokes_law(viscosity: float, radius: float, terminal_velocity: float) -> float:
-    """
+    r"""
     Calculate the viscous drag resistance profile acting over an isolated sphere via Stokes' Law ($F_d = 6 \pi \mu r v$).
 
     Valid inside laminar regimes with very low particle Reynolds limits ($Re \ll 1$).
@@ -474,7 +474,7 @@ def stokes_law(viscosity: float, radius: float, terminal_velocity: float) -> flo
 def poiseuilles_law(
     pressure_drop: float, pipe_radius: float, pipe_length: float, fluid_viscosity: float
 ) -> float:
-    """
+    r"""
     Calculate the laminar volumetric flow rate inside a cylindrical pipe channel via Poiseuille's Law.
 
     $Q = \\frac{\pi \Delta P r^4}{8 \mu L}$

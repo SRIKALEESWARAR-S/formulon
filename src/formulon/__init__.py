@@ -10,7 +10,10 @@ automatic input validation and NumPy support.
 
 Designed for educational, scientific, and engineering use.
 
-Beta version count =2
+An optional quantum-computing extension (Qiskit- and PennyLane-backed
+circuit demos, including a Legendre-polynomial quantum feature map/kernel)
+lives in `formulon.quantum_computing` and is NOT imported here -- see that
+subpackage's docstring for installation instructions.
 """
 
 from .__about__ import __version__
@@ -26,7 +29,10 @@ from .fluidmechanics import *
 from .mathematicalseries import *
 
 # --- Public API ---
-__all__ = [
-    "__version__",
-]
+# Module-level star imports above populate the package namespace.
+# Keep __version__ explicitly public; imported formula names remain available
+# as attributes of the package.
+__all__ = [name for name in globals() if not name.startswith("_")]
 
+
+from .formula_catalog import FORMULA_COUNT, FORMULAS, get_formula

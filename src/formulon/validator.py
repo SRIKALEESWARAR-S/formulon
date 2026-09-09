@@ -1,403 +1,208 @@
+"""Validation primitives for Formulon Physics.
+
+The validator distinguishes mathematical/numerical constraints from optional
+physical assumptions.  Bounds are deliberately conservative: they reject
+undefined mathematical inputs (zero denominators, negative absolute
+quantities, invalid angles) without pretending that textbook ranges are
+universal laws.  Dimensional/unit checking is provided separately by
+:mod:`formulon.units` using Pint.
 """
-validators.py
-=============
-Universal physics validation module for Project Formulon-Physics.
-
-Architecture
-------------
-  PhysicalBounds   — Declarative container mapping parameters to physical laws.
-  PhysicsCatalog   — Comprehensive namespace containing real-world physical boundaries.
-  @validate        — Decorator factory that applies boundaries and acts as a runtime safety net.
-  validate_* — Independent post-computation and array-structure utilities.
-
-Project: Project Formulon-Physics
-License: MIT License ~ Open Source Project
-"""
-
-import functools
-import inspect
-import math
-import sys
+from __future__ import annotations
+import functools, inspect, math
 from typing import Any, Callable
 import numpy as np
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 1. Physical Quantity Structural Model
-# ══════════════════════════════════════════════════════════════════════════════
-
 class PhysicalBounds:
+    """Declarative numeric domain rule.
+
+    Parameters are inclusive unless ``strict_min``/``strict_max`` is set.
+    ``None`` means no bound.  Bounds are model assumptions, not universal
+    statements about every physical system.
     """
-    A declarative boundary mapping physical properties directly to mathematical laws.
-
-    Project: Project Formulon-Physics
-    """
-
-    def __init__(
-        self, 
-        min_val: float | None = None, 
-        max_val: float | None = None, 
-        unit: str = "", 
-        reason: str = ""
-    ) -> None:
-        self.min_val = min_val
-        self.max_val = max_val
-        self.unit = unit
-        self.reason = reason
-
+    def __init__(self, min_val=None, max_val=None, unit="", reason="", *, strict_min=False, strict_max=False):
+        self.min_val=min_val; self.max_val=max_val; self.unit=unit; self.reason=reason
+        self.strict_min=strict_min; self.strict_max=strict_max
     def check(self, value: Any, name: str) -> None:
-        """Type-guards and bounds-tests the incoming numerical input against physical constants."""
-        # Type Guard: Explicitly reject non-numbers and booleans (which inherit from int)
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
-            raise TypeError(f"'{name}' must be a real number (int or float). Got {type(value).__name__}.")
-
-        # Lower Boundary Constraint Check
-        if self.min_val is not None and value < self.min_val:
-            unit_str = f" {self.unit}" if self.unit else ""
-            raise ValueError(
-                f"Physical boundary violation for '{name}': {value}{unit_str} is below permissible limits. "
-                f"{self.reason} (Minimum: {self.min_val}{unit_str})"
-            )
-
-        # Upper Boundary Constraint Check
-        if self.max_val is not None and value > self.max_val:
-            unit_str = f" {self.unit}" if self.unit else ""
-            raise ValueError(
-                f"Physical boundary violation for '{name}': {value}{unit_str} exceeds cosmic limits. "
-                f"{self.reason} (Maximum: {self.max_val}{unit_str})"
-            )
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 2. Complete Physics Rule Catalog
-# ══════════════════════════════════════════════════════════════════════════════
+        if isinstance(value, (bool, np.bool_)):
+            raise TypeError(f"{name!r} must be numeric, not boolean")
+        if isinstance(value, np.ndarray):
+            if value.ndim != 0:
+                raise TypeError(f"{name!r} expects a scalar; use a vectorized API for arrays")
+            value=value.item()
+        if not isinstance(value, (int,float,np.integer,np.floating)):
+            raise TypeError(f"{name!r} must be a real scalar, got {type(value).__name__}")
+        value=float(value)
+        if not math.isfinite(value):
+            raise ValueError(f"{name!r} must be finite")
+        if self.min_val is not None and ((value <= self.min_val) if self.strict_min else (value < self.min_val)):
+            op='>' if self.strict_min else '>='
+            raise ValueError(f"{name}={value} violates lower bound {op} {self.min_val}. {self.reason}")
+        if self.max_val is not None and ((value >= self.max_val) if self.strict_max else (value > self.max_val)):
+            op='<' if self.strict_max else '<='
+            raise ValueError(f"{name}={value} violates upper bound {op} {self.max_val}. {self.reason}")
 
 class PhysicsCatalog:
+    """Shared domain rules used by the formula modules.
+
+    The rules are intentionally about mathematical validity and common model
+    assumptions.  They do not impose arbitrary cosmic limits on classical
+    quantities such as velocity or gravity.
     """
-    A structural inventory of boundaries across every major physics sub-domain.
+    C_LIGHT=299_792_458.0
+    REAL=PhysicalBounds()
+    POSITIVE=PhysicalBounds(min_val=0.0, strict_min=True, reason='must be strictly positive')
+    NON_NEGATIVE=PhysicalBounds(min_val=0.0, reason='must be non-negative')
+    NEGATIVE=PhysicalBounds(max_val=0.0, strict_max=True, reason='must be strictly negative')
+    FRACTION=PhysicalBounds(min_val=0.0,max_val=1.0,reason='dimensionless fraction')
+    NON_NEG_TIME=PhysicalBounds(min_val=0.0,unit='s')
+    POSITIVE_TIME=PhysicalBounds(min_val=0.0,unit='s',strict_min=True)
+    PERIOD=PhysicalBounds(min_val=0.0,unit='s',strict_min=True)
+    MASS=PhysicalBounds(min_val=0.0,unit='kg',strict_min=True)
+    VELOCITY=PhysicalBounds(unit='m/s')
+    SPEED=PhysicalBounds(min_val=0.0,unit='m/s')
+    RELATIVISTIC_SPEED=PhysicalBounds(min_val=0.0,max_val=C_LIGHT,unit='m/s',strict_max=True)
+    ACCELERATION=PhysicalBounds(unit='m/s^2')
+    FORCE=PhysicalBounds(unit='N')
+    DISPLACEMENT=PhysicalBounds(unit='m')
+    DISTANCE=PhysicalBounds(min_val=0.0,unit='m',strict_min=True)
+    MOMENTUM=PhysicalBounds(unit='kg m/s')
+    IMPULSE=PhysicalBounds(unit='N s')
+    COEFF_FRICTION=PhysicalBounds(min_val=0.0,reason='coefficient of friction cannot be negative')
+    HEIGHT=PhysicalBounds(min_val=0.0,unit='m')
+    NORMAL_FORCE=PhysicalBounds(min_val=0.0,unit='N')
+    APPARENT_WEIGHT=PhysicalBounds(min_val=0.0,unit='N')
+    CM_COORD=PhysicalBounds(unit='m')
+    GRAVITY=PhysicalBounds(min_val=0.0,unit='m/s^2')
+    ANGLE_DEG=PhysicalBounds(min_val=0.0,max_val=360.0,unit='deg')
+    ANGLE_DEG_90=PhysicalBounds(min_val=0.0,max_val=90.0,unit='deg')
+    ANGLE_DEG_180=PhysicalBounds(min_val=0.0,max_val=180.0,unit='deg')
+    ANGULAR_FREQUENCY=PhysicalBounds(min_val=0.0,unit='rad/s')
+    CROSS_ANGLE_DEG=PhysicalBounds(min_val=0.0,max_val=180.0,unit='deg')
+    ANGLE_RAD=PhysicalBounds(unit='rad')
+    INCIDENCE_ANGLE=PhysicalBounds(min_val=0.0,max_val=90.0,unit='deg')
+    WORK_ANGLE_DEG=PhysicalBounds(min_val=0.0,max_val=180.0,unit='deg')
+    RADIUS=PhysicalBounds(min_val=0.0,unit='m',strict_min=True)
+    ANGULAR_VEL=PhysicalBounds(unit='rad/s')
+    ANGULAR_ACC=PhysicalBounds(unit='rad/s^2')
+    MOMENT_OF_INERTIA=PhysicalBounds(min_val=0.0,unit='kg m^2')
+    TORQUE=PhysicalBounds(unit='N m')
+    ANGULAR_MOMENTUM=PhysicalBounds(unit='kg m^2/s')
+    PARALLEL_AXIS_D=PhysicalBounds(min_val=0.0,unit='m')
+    SPRING_CONST=PhysicalBounds(min_val=0.0,unit='N/m',strict_min=True)
+    SPRING_DISPLACEMENT=PhysicalBounds(unit='m')
+    ENERGY=PhysicalBounds(unit='J')
+    KINETIC_ENERGY=PhysicalBounds(min_val=0.0,unit='J')
+    POTENTIAL_ENERGY=PhysicalBounds(unit='J')
+    WORK=PhysicalBounds(unit='J')
+    WORK_IO=PhysicalBounds(min_val=0.0,unit='J',strict_min=True)
+    POWER=PhysicalBounds(unit='W')
+    EFFICIENCY=PhysicalBounds(min_val=0.0,max_val=100.0,unit='%')
+    FREQUENCY=PhysicalBounds(min_val=0.0,unit='Hz')
+    WAVELENGTH=PhysicalBounds(min_val=0.0,unit='m',strict_min=True)
+    WAVE_SPEED=PhysicalBounds(min_val=0.0,unit='m/s',strict_min=True)
+    REFRACTIVE_INDEX=PhysicalBounds(min_val=0.0,reason='index must be non-negative; effective/metamaterial indices may be below 1')
+    AMPLITUDE=PhysicalBounds(min_val=0.0)
+    INTENSITY=PhysicalBounds(min_val=0.0,unit='W/m^2')
+    WAVE_NUMBER=PhysicalBounds(min_val=0.0,unit='rad/m',strict_min=True)
+    TEMPERATURE_K=PhysicalBounds(min_val=0.0,unit='K')
+    TEMPERATURE_C=PhysicalBounds(min_val=-273.15,unit='degC')
+    TEMPERATURE_F=PhysicalBounds(min_val=-459.67,unit='degF')
+    DELTA_TEMP=PhysicalBounds(unit='K')
+    PRESSURE=PhysicalBounds(min_val=0.0,unit='Pa',strict_min=True)
+    VOLUME=PhysicalBounds(min_val=0.0,unit='m^3',strict_min=True)
+    MOLES=PhysicalBounds(min_val=0.0,unit='mol',strict_min=True)
+    HEAT=PhysicalBounds(unit='J')
+    SPECIFIC_HEAT=PhysicalBounds(min_val=0.0,unit='J/(kg K)',strict_min=True)
+    LATENT_HEAT=PhysicalBounds(min_val=0.0,unit='J/kg',strict_min=True)
+    ENTROPY=PhysicalBounds(unit='J/K')
+    THERMAL_EFFICIENCY=PhysicalBounds(min_val=0.0,max_val=1.0)
+    CHARGE=PhysicalBounds(unit='C')
+    ELECTRIC_FIELD=PhysicalBounds(min_val=0.0,unit='N/C')
+    ELECTRIC_POTENTIAL=PhysicalBounds(unit='V')
+    PERMITTIVITY=PhysicalBounds(min_val=0.0,unit='F/m',strict_min=True)
+    MAGNETIC_FIELD=PhysicalBounds(min_val=0.0,unit='T')
+    MAGNETIC_FLUX=PhysicalBounds(unit='Wb')
+    RESISTANCE=PhysicalBounds(min_val=0.0,unit='ohm',strict_min=True)
+    RESISTIVITY=PhysicalBounds(min_val=0.0,unit='ohm m',strict_min=True)
+    VOLTAGE=PhysicalBounds(unit='V')
+    CURRENT=PhysicalBounds(unit='A')
+    CAPACITANCE=PhysicalBounds(min_val=0.0,unit='F',strict_min=True)
+    INDUCTANCE=PhysicalBounds(min_val=0.0,unit='H',strict_min=True)
+    CONDUCTIVITY=PhysicalBounds(min_val=0.0,unit='S/m')
+    RELATIVE_PERMITTIVITY=PhysicalBounds(min_val=0.0)
+    VISCOSITY=PhysicalBounds(min_val=0.0,unit='Pa s',strict_min=True)
+    DENSITY=PhysicalBounds(min_val=0.0,unit='kg/m^3',strict_min=True)
+    AREA=PhysicalBounds(min_val=0.0,unit='m^2',strict_min=True)
+    DYNAMIC_PRESSURE=PhysicalBounds(min_val=0.0,unit='Pa')
+    BULK_MODULUS=PhysicalBounds(min_val=0.0,unit='Pa',strict_min=True)
+    MOLAR_MASS=PhysicalBounds(min_val=0.0,unit='kg/mol',strict_min=True)
+    TEMPERATURE=PhysicalBounds(min_val=0.0,unit='K')
+    ADIABATIC_INDEX=PhysicalBounds(min_val=1.0)
+    GAS_CONSTANT=PhysicalBounds(min_val=0.0,unit='J/(mol K)',strict_min=True)
+    LINEAR_DENSITY=PhysicalBounds(min_val=0.0,unit='kg/m',strict_min=True)
+    NUMBER_DENSITY=PhysicalBounds(min_val=0.0,unit='1/m^3',strict_min=True)
+    SOUND_INTENSITY=PhysicalBounds(min_val=0.0,unit='W/m^2')
+    SOUND_INTENSITY_BASE=PhysicalBounds(min_val=0.0,unit='W/m^2',strict_min=True)
+    THERMAL_CONDUCTIVITY=PhysicalBounds(min_val=0.0,unit='W/(m K)')
+    EMISSIVITY=PhysicalBounds(min_val=0.0,max_val=1.0)
+    DIELECTRIC_CONSTANT=PhysicalBounds(min_val=0.0)
+    TURNS_PER_LENGTH=PhysicalBounds(min_val=0.0,unit='1/m')
+    MICROSTATES=PhysicalBounds(min_val=1.0)
+    DEGREES_FREEDOM=PhysicalBounds(min_val=1.0)
 
-    Project: Project Formulon-Physics
-    """
-    
-    # Universal Constants
-    C_LIGHT = 2.998e8       # Speed of light in a vacuum (m/s)
-    G_SUN_MAX = 274.0       # Surface gravity of the Sun (m/s²)
-    T_MIN = 1e-6            # Numerical stability limit for time fractions (s)
-    T_MAX = 1e100           # Simulation overflow threshold (s)
-
-    # --- CORE MATHEMATICAL SCALARS ---
-    REAL = PhysicalBounds()
-    POSITIVE = PhysicalBounds(min_val=1e-30, reason="Value must be strictly positive.")
-    NON_NEGATIVE = PhysicalBounds(min_val=0.0, reason="Value cannot fall below zero.")
-    NEGATIVE = PhysicalBounds(max_val=-1e-30, reason="Value must be strictly negative.")
-    FRACTION = PhysicalBounds(min_val=0.0, max_val=1.0, reason="Ratio must be constrained between 0 and 1.")
-
-    # --- TIME SYSTEMS ---
-    NON_NEG_TIME = PhysicalBounds(min_val=0.0, unit="s", reason="Time arrow must move forward.")
-    POSITIVE_TIME = PhysicalBounds(min_val=T_MIN, max_val=T_MAX, unit="s", reason="Interval triggers numerical edge risks.")
-    PERIOD = PhysicalBounds(min_val=T_MIN, unit="s", reason="Rotational/wave periods must be positive.")
-
-    # --- MECHANICS (KINEMATICS & DYNAMICS) ---
-    MASS = PhysicalBounds(min_val=1e-31, unit="kg", reason="Mass must be strictly positive in classical mechanics.")
-    VELOCITY = PhysicalBounds(min_val=-C_LIGHT, max_val=C_LIGHT, unit="m/s", reason="Velocity magnitude cannot violate relativity.")
-    SPEED = PhysicalBounds(min_val=0.0, max_val=C_LIGHT, unit="m/s", reason="Scalar speed is restricted by the speed of light.")
-    ACCELERATION = PhysicalBounds()
-    FORCE = PhysicalBounds()
-    DISPLACEMENT = PhysicalBounds()
-    DISTANCE = PhysicalBounds(min_val=0.0, unit="m", reason="Spatial distance cannot be negative.")
-    MOMENTUM = PhysicalBounds()
-    IMPULSE = PhysicalBounds()
-    COEFF_FRICTION = PhysicalBounds(min_val=0.0, max_val=1.0, reason="Friction coefficients exist within [0, 1].")
-    HEIGHT = PhysicalBounds(min_val=0.0, unit="m", reason="Altitude/Height relative to coordinate base must be non-negative.")
-    NORMAL_FORCE = PhysicalBounds(min_val=0.0, unit="N", reason="Surface contact reaction forces must be non-negative.")
-    APPARENT_WEIGHT = PhysicalBounds(min_val=0.0, unit="N", reason="Perceived gravitational weight cannot drop below zero.")
-    CM_COORD = PhysicalBounds()
-
-    # --- GRAVITATIONAL FIELD SYSTEMS ---
-    GRAVITY = PhysicalBounds(min_val=0.0, max_val=G_SUN_MAX, unit="m/s²", reason="Local acceleration bounds exceed stellar profiles.")
-
-    # --- ANGLES & ROTATIONAL GEOMETRIES ---
-    ANGLE_DEG = PhysicalBounds(min_val=0.0, max_val=360.0, unit="°", reason="Angle must reside in a standard continuous circle.")
-    ANGLE_DEG_90 = PhysicalBounds(min_val=0.0, max_val=90.0, unit="°", reason="Angle bounded by the horizon and local vertical.")
-    CROSS_ANGLE_DEG = PhysicalBounds(min_val=0.0, max_val=180.0, unit="°", reason="Vector separation angles resolve inside [0, 180].")
-    ANGLE_RAD = PhysicalBounds()
-    INCIDENCE_ANGLE = PhysicalBounds(min_val=0.0, max_val=90.0, unit="°", reason="Optical incidence boundaries must not track parallel to interface.")
-    WORK_ANGLE_DEG = PhysicalBounds(min_val=0.0, max_val=180.0, unit="°", reason="Vector displacement dot products are bounded by standard directions.")
-
-    # --- CIRCULAR MOTION & MECHANICS ---
-    RADIUS = PhysicalBounds(min_val=1e-12, unit="m", reason="Geometric coordinate radius cannot form a zero-singularity.")
-    ANGULAR_VEL = PhysicalBounds()
-    ANGULAR_ACC = PhysicalBounds()
-    MOMENT_OF_INERTIA = PhysicalBounds(min_val=1e-30, unit="kg·m²", reason="Rotational mass must be strictly positive.")
-    TORQUE = PhysicalBounds()
-    ANGULAR_MOMENTUM = PhysicalBounds()
-    PARALLEL_AXIS_D = PhysicalBounds(min_val=0.0, unit="m", reason="Axis displacement distance cannot be a negative length.")
-    SPRING_CONST = PhysicalBounds(min_val=1e-5, unit="N/m", reason="Hooke elastic constants must exert restoring mechanics.")
-    SPRING_DISPLACEMENT = PhysicalBounds()
-
-    # --- ENERGY, WORK & POWER SYSTEMS ---
-    ENERGY = PhysicalBounds()
-    KINETIC_ENERGY = PhysicalBounds(min_val=0.0, unit="J", reason="Kinetic work scalars are inherently non-negative.")
-    POTENTIAL_ENERGY = PhysicalBounds()
-    WORK = PhysicalBounds()
-    WORK_IO = PhysicalBounds(min_val=1e-12, unit="J", reason="Thermodynamic or electrical work tracking cannot be zero.")
-    POWER = PhysicalBounds()
-    EFFICIENCY = PhysicalBounds(min_val=1e-12, max_val=100.0, unit="%", reason="Standard efficiency values must reside in (0, 100].")
-
-    # --- WAVES & OPTICS ---
-    FREQUENCY = PhysicalBounds(min_val=1e-3, unit="Hz", reason="Spectral oscillations require positive frequency metrics.")
-    WAVELENGTH = PhysicalBounds(min_val=1e-18, unit="m", reason="Physical waves must possess valid spatial extensions.")
-    WAVE_SPEED = PhysicalBounds(min_val=1e-3, unit="m/s", reason="Wave velocity vectors require positive magnitudes.")
-    REFRACTIVE_INDEX = PhysicalBounds(min_val=1.0, reason="Media velocities cannot exceed vacuum speeds (n >= 1).")
-    AMPLITUDE = PhysicalBounds(min_val=0.0, reason="Wave envelope maximum bounds must remain non-negative.")
-    INTENSITY = PhysicalBounds(min_val=0.0, unit="W/m²", reason="Energy flux surface distributions must be non-negative.")
-    WAVE_NUMBER = PhysicalBounds(min_val=1e-5, unit="rad/m", reason="Spatial frequencies must be strictly positive.")
-
-    # --- THERMODYNAMICS ---
-    TEMPERATURE_K = PhysicalBounds(min_val=0.0, unit="K", reason="Thermal kinetic energy cannot breach Absolute Zero.")
-    TEMPERATURE_C = PhysicalBounds(min_val=-273.15, unit="°C", reason="Thermal kinetic energy cannot breach Absolute Zero.")
-    TEMPERATURE_F = PhysicalBounds(min_val=-459.67, unit="°F", reason="Thermal kinetic energy cannot breach Absolute Zero.")
-    DELTA_TEMP = PhysicalBounds()
-    PRESSURE = PhysicalBounds(min_val=1e-10, unit="Pa", reason="Kinetic collisions dictate strictly positive fluid pressures.")
-    VOLUME = PhysicalBounds(min_val=1e-30, unit="m³", reason="Physical space parameters must be positive.")
-    MOLES = PhysicalBounds(min_val=1e-24, unit="mol", reason="Matter parameters must possess real positive entities.")
-    HEAT = PhysicalBounds()
-    SPECIFIC_HEAT = PhysicalBounds(min_val=1e-3, unit="J/(kg·K)", reason="Thermal absorption behaviors must be positive.")
-    LATENT_HEAT = PhysicalBounds(min_val=1e-3, unit="J/kg", reason="Enthalpy changes during structural transition require positive energy scales.")
-    ENTROPY = PhysicalBounds()
-    THERMAL_EFFICIENCY = PhysicalBounds(min_val=1e-12, max_val=1.0, reason="Thermodynamic cycle benchmarks span across (0, 1].")
-
-    # --- ELECTROSTATICS & ELECTROMAGNETISM ---
-    CHARGE = PhysicalBounds()
-    ELECTRIC_FIELD = PhysicalBounds(min_val=0.0, unit="N/C", reason="Field strength tensor magnitudes must be non-negative.")
-    ELECTRIC_POTENTIAL = PhysicalBounds()
-    PERMITTIVITY = PhysicalBounds(min_val=1e-12, unit="F/m", reason="Dielectric responses remain strictly positive.")
-    MAGNETIC_FIELD = PhysicalBounds(min_val=0.0, unit="T", reason="Induction field vector lengths are non-negative properties.")
-    MAGNETIC_FLUX = PhysicalBounds()
-    PERMEABILITY = PhysicalBounds(min_val=1e-7, unit="H/m", reason="Magnetic medium interactions remain strictly positive.")
-
-    # --- CIRCUITS ---
-    RESISTANCE = PhysicalBounds(min_val=0.0, unit="Ω", reason="Superconducting mechanics protect non-negative resistances.")
-    RESISTIVITY = PhysicalBounds(min_val=1e-15, unit="Ω·m", reason="Intrinsic medium electrical damping requires positive constraints.")
-    CURRENT = PhysicalBounds()
-    VOLTAGE = PhysicalBounds()
-    CAPACITANCE = PhysicalBounds(min_val=1e-20, unit="F", reason="Dielectric layout storage metrics must remain strictly positive.")
-    INDUCTANCE = PhysicalBounds(min_val=1e-20, unit="H", reason="Flux-current configuration balances must be strictly positive.")
-    EMF = PhysicalBounds()
-    IMPEDANCE = PhysicalBounds(min_val=0.0, unit="Ω", reason="Complex load total magnitudes must equal or cross zero.")
-    POWER_FACTOR = PhysicalBounds(min_val=0.0, max_val=1.0, reason="Phase angle cosine values remain inside [0, 1].")
-    TURNS = PhysicalBounds(min_val=1.0, reason="Inductor loops must feature positive integers.")
-
-    # --- MODERN PHYSICS ---
-    BETA = PhysicalBounds(min_val=0.0, max_val=1.0, reason="Relativistic speed fractions must span inside (0, 1).")
-    LORENTZ_FACTOR = PhysicalBounds(min_val=1.0, reason="Dilation scale multipliers evaluate to 1 or higher.")
-    PHOTON_ENERGY = PhysicalBounds(min_val=1e-34, unit="J", reason="Quantum packets must register positive energetic footprints.")
-    DE_BROGLIE_WL = PhysicalBounds(min_val=1e-20, unit="m", reason="Matter mechanics demand positive wavelength metrics.")
-    PLANCK_H = PhysicalBounds(min_val=1e-35, unit="J·s", reason="Fundamental actions require real, finite limits.")
-    REST_MASS = PhysicalBounds(min_val=1e-31, unit="kg", reason="Inertial rest profiles require positive masses.")
-
-    # --- FLUID MECHANICS ---
-    DENSITY = PhysicalBounds(min_val=1e-15, unit="kg/m³", reason="Matter distributions necessitate positive density layers.")
-    VISCOSITY = PhysicalBounds(min_val=1e-7, unit="Pa·s", reason="Internal shear losses demand valid friction levels.")
-    FLOW_RATE = PhysicalBounds(min_val=1e-20, unit="m³/s", reason="Volumetric dynamic movements remain strictly positive metrics.")
-    AREA = PhysicalBounds(min_val=1e-20, unit="m²", reason="Planar boundaries must span positive dimensions.")
-    REYNOLDS = PhysicalBounds(min_val=1e-5, reason="Dimensionless inertia/viscous balances require positive tracking.")
-    BULK_MODULUS = PhysicalBounds(min_val=1e-2, unit="Pa", reason="Incompressibility elastic properties remain positive.")
-
-
-# Global system singleton reference
-RULES = PhysicsCatalog()
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 3. Comprehensive Intercept Validation Decorator
-# ══════════════════════════════════════════════════════════════════════════════
+RULES=PhysicsCatalog()
 
 def validate(**param_rules: PhysicalBounds) -> Callable:
-    """
-    Decorator factory: maps structural rules to parameter inputs, and
-    intercepts execution-level mathematical faults gracefully.
-
-    Project: Project Formulon-Physics
-    """
-    # Validation constraint checkpoint at load-time
-    for key, rule in param_rules.items():
-        if not isinstance(rule, PhysicalBounds):
-            raise TypeError(f"@validate config error: Key '{key}' needs a valid PhysicalBounds instance.")
-
-    def decorator(func: Callable) -> Callable:
-        sig = inspect.signature(func)
-        param_names = list(sig.parameters.keys())
-
-        # Signature mismatch alignment validation
+    """Validate scalar inputs, then preserve the original scientific exception."""
+    for key,rule in param_rules.items():
+        if not isinstance(rule,PhysicalBounds): raise TypeError(f"Invalid validation rule for {key}")
+    def decorator(func):
+        sig=inspect.signature(func)
         for key in param_rules:
-            if key not in param_names:
-                raise NameError(f"@validate tracking error on '{func.__name__}': Parameter '{key}' does not exist.")
-
+            if key not in sig.parameters: raise NameError(f"{func.__name__}: unknown parameter {key}")
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            # Match incoming execution arguments to signature keys
-            bound = sig.bind(*args, **kwargs)
-            bound.apply_defaults()
-
-            # Execute explicit input validations
-            for param, rule in param_rules.items():
-                if param in bound.arguments:
-                    rule.check(bound.arguments[param], param)
-
-            # Execution Protection Phase
-            try:
-                result = func(*args, **kwargs)
-                
-                # Intercept invalid numerical calculations before passing downstream
-                if isinstance(result, (int, float)) and not math.isfinite(result):
-                    raise ValueError("Calculation generated an Infinite or NaN value.")
-                return result
-
-            except ZeroDivisionError as exc:
-                raise RuntimeError(
-                    f"Physical Singularity in '{func.__name__}': Calculation caused a division by zero. "
-                    f"Ensure denominator components (time intervals, distance steps, mass components) are not zero."
-                ) from exc
-
-            except OverflowError as exc:
-                raise RuntimeError(
-                    f"Numerical Overflow in '{func.__name__}': System values reached scales python cannot resolve. "
-                    f"Check scientific exponential terms or units."
-                ) from exc
-
-            except ValueError as exc:
-                raise ValueError(
-                    f"Domain Matrix Error in '{func.__name__}': {exc}. "
-                    f"Verify math consistency rules (e.g., negative parameters passed into square root transformations)."
-                ) from exc
-
-            except KeyboardInterrupt:
-                print(f"\n[Terminated] Computation loop inside '{func.__name__}' intercepted by hardware interrupt request.")
-                sys.exit(130)
-
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Unhandled calculation exception trapped inside execution layer of '{func.__name__}': {exc}"
-                ) from exc
-
+        def wrapper(*args,**kwargs):
+            bound=sig.bind(*args,**kwargs); bound.apply_defaults()
+            for param,rule in param_rules.items(): rule.check(bound.arguments[param],param)
+            result=func(*args,**kwargs)
+            if isinstance(result,(int,float,np.integer,np.floating)) and not math.isfinite(float(result)):
+                raise FloatingPointError(f"{func.__name__} returned a non-finite result")
+            return result
         return wrapper
     return decorator
 
+def validate_array_lengths(a,b,name_a='a',name_b='b'):
+    """Require two sequences to have identical lengths."""
+    if len(a)!=len(b): raise ValueError(f"{name_a} and {name_b} must have equal length")
+def validate_strictly_increasing(arr,name='arr'):
+    """Require a finite one-dimensional sequence to increase strictly."""
+    x=np.asarray(arr,dtype=float)
+    if x.ndim!=1 or x.size<2 or np.any(~np.isfinite(x)) or np.any(np.diff(x)<=0): raise ValueError(f"{name} must be finite, 1-D, and strictly increasing")
+def validate_time_array(t,name='t'):
+    """Validate a finite, strictly increasing one-dimensional time grid."""
+    x=np.asarray(t,dtype=float)
+    if x.ndim!=1 or x.size<2 or np.any(~np.isfinite(x)) or np.any(np.diff(x)<=0): raise ValueError(f"{name} must be a finite strictly increasing 1-D time grid")
+    return x
+def validate_positive_array(arr,name='arr'):
+    """Require every array element to be finite and strictly positive."""
+    x=np.asarray(arr,dtype=float)
+    if np.any(~np.isfinite(x)) or np.any(x<=0): raise ValueError(f"{name} must contain finite positive values")
+    return x
+def validate_non_negative_array(arr,name='arr'):
+    """Require every array element to be finite and non-negative."""
+    x=np.asarray(arr,dtype=float)
+    if np.any(~np.isfinite(x)) or np.any(x<0): raise ValueError(f"{name} must contain finite non-negative values")
+    return x
+def validate_same_shape(*arrays_names):
+    """Require all named arrays to have identical shapes."""
+    if not arrays_names: return
+    shapes=[(np.asarray(a).shape,n) for a,n in arrays_names]
+    if any(s!=shapes[0][0] for s,_ in shapes[1:]): raise ValueError('arrays must have identical shapes')
+def validate_finite(value,name='value'):
+    """Reject NaN and infinite scalar values."""
+    if not math.isfinite(float(value)): raise ValueError(f"{name} must be finite")
+def validate_cross_param_le(a,b,name_a='a',name_b='b'):
+    """Require parameter ``a`` not to exceed comparison parameter ``b``."""
+    if a>b: raise ValueError(f"{name_a} must be <= {name_b}")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 4. Standalone Multi-Parameter and Vector Trackers
-# ══════════════════════════════════════════════════════════════════════════════
-
-def validate_array_lengths(a: Any, b: Any, name_a: str, name_b: str) -> None:
-    """
-    Validates dimensional consistency across matching metric lengths.
-
-    Project: Project Formulon-Physics
-    """
-    if len(a) != len(b):
-        raise ValueError(f"Structural Mismatch: '{name_a}' (len={len(a)}) must match '{name_b}' (len={len(b)}).")
-
-
-def validate_strictly_increasing(arr: Any, name: str = "arr") -> None:
-    """
-    Ensures sequential metrics (like time timelines) increase steadily.
-
-    Project: Project Formulon-Physics
-    """
-    parsed = np.asarray(arr, dtype=float)
-    if np.any(np.diff(parsed) <= 0):
-        raise ValueError(f"Sequence configuration fault: Array tracking vector '{name}' must be strictly increasing.")
-
-
-def validate_time_array(t: Any, name: str = "t") -> np.ndarray:
-    """
-    Analyzes, typeguards, and structural-maps a continuous time array.
-
-    Project: Project Formulon-Physics
-    """
-    try:
-        parsed = np.asarray(t, dtype=float)
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"Array '{name}' could not be compiled into real physical float structures. Trace: {exc}") from exc
-
-    if parsed.ndim != 1:
-        raise ValueError(f"Dimensional fault: '{name}' needs to map to a 1D timeline array (received shape {parsed.shape}).")
-    if len(parsed) < 2:
-        raise ValueError(f"Data density error: Array timeline '{name}' must provide at least 2 distinct metrics.")
-    if np.any(parsed <= 0):
-        raise ValueError(f"Temporal arrow violation: Tracked matrix segments inside '{name}' must exceed absolute zero (t > 0).")
-    if parsed[-1] == parsed[0]:
-        raise ValueError(f"Static timeline fault: End coordinates match starting indices inside vector reference '{name}'.")
-    if np.any(parsed < PhysicsCatalog.T_MIN) or np.any(parsed > PhysicsCatalog.T_MAX):
-        raise ValueError(f"Numeric simulation limits exceeded: Ensure array data values stay within standard resolution limits.")
-    return parsed
-
-
-def validate_positive_array(arr: Any, name: str) -> np.ndarray:
-    """
-    Ensures scalar entries across tracked arrays remain explicitly greater than zero.
-
-    Project: Project Formulon-Physics
-    """
-    try:
-        parsed = np.asarray(arr, dtype=float)
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"Matrix parsing error for '{name}': Couldn't map targets to a float schema. Detail: {exc}") from exc
-
-    if np.any(parsed <= 0):
-        invalid_items = parsed[parsed <= 0]
-        raise ValueError(f"Physical constraint error inside matrix '{name}': Elements must match positive scales. Infractions: {invalid_items}")
-    return parsed
-
-
-def validate_non_negative_array(arr: Any, name: str) -> np.ndarray:
-    """
-    Verifies metric variables inside collection tracks never fall below zero.
-
-    Project: Project Formulon-Physics
-    """
-    try:
-        parsed = np.asarray(arr, dtype=float)
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"Matrix parsing error for '{name}': Couldn't convert indices into standard floats. Detail: {exc}") from exc
-
-    if np.any(parsed < 0):
-        invalid_items = parsed[parsed < 0]
-        raise ValueError(f"Boundary fault on element array '{name}': Coordinates cannot be negative indices. Infractions: {invalid_items}")
-    return parsed
-
-
-def validate_same_shape(*arrays_names: tuple[Any, str]) -> None:
-    """
-    Verifies multi-dimensional geometry states match across arrays.
-
-    Project: Project Formulon-Physics
-    """
-    converted = [(np.asarray(a), n) for a, n in arrays_names]
-    base_shape = converted[0][0].shape
-    base_name = converted[0][1]
-    
-    for current_arr, current_name in converted[1:]:
-        if current_arr.shape != base_shape:
-            raise ValueError(f"Geometry coordinate tracking fault: Parameter '{base_name}' features shape {base_shape}, but variable '{current_name}' yields shape {current_arr.shape}.")
-
-
-def validate_finite(value: float, name: str) -> None:
-    """
-    Final computation checkpoint ensuring scalar indicators are valid numbers.
-
-    Project: Project Formulon-Physics
-    """
-    if not math.isfinite(value):
-        raise ValueError(f"Computed computational error for '{name}': Generated metrics are not finite values ({value}). Check input dimensions.")
-
-
-def validate_cross_param_le(a: float, b: float, name_a: str, name_b: str) -> None:
-    """
-    Calculates relational constraints across interdependent values (e.g., T_cold <= T_hot).
-
-    Project: Project Formulon-Physics
-    """
-    if a > b:
-        raise ValueError(f"Interdependent rule breach: Component parameter '{name_a}' ({a}) can't exceed comparative baseline '{name_b}' ({b}).")
+__all__=['PhysicalBounds','PhysicsCatalog','RULES','validate','validate_array_lengths','validate_strictly_increasing','validate_time_array','validate_positive_array','validate_non_negative_array','validate_same_shape','validate_finite','validate_cross_param_le']

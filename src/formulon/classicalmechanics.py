@@ -8,13 +8,13 @@ All formulations are validated prior to execution using physical boundary constr
 and protected against runtime anomalies via the external validators framework.
 
 Project: Project Formulon-Physics
-License: MIT License
+License: Apache-2.0
 """
 
 import math
 from typing import Callable
 import scipy.integrate as integrate
-from validators import validate, RULES, validate_cross_param_le
+from .validator import validate, RULES, validate_cross_param_le
 
 __all__ = [
     # 1. Linear Kinematics & Free Fall
@@ -94,7 +94,7 @@ __all__ = [
 
 @validate(delta_x=RULES.DISPLACEMENT, delta_t=RULES.POSITIVE_TIME)
 def average_velocity(delta_x: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate the average velocity over a given spatial displacement and time interval ($v_{avg} = \\Delta x / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -104,7 +104,7 @@ def average_velocity(delta_x: float, delta_t: float) -> float:
 
 @validate(delta_v=RULES.VELOCITY, delta_t=RULES.POSITIVE_TIME)
 def average_acceleration(delta_v: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate the average linear acceleration ($a_{avg} = \\Delta v / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -114,7 +114,7 @@ def average_acceleration(delta_v: float, delta_t: float) -> float:
 
 @validate(v0=RULES.VELOCITY, t=RULES.NON_NEG_TIME, a=RULES.ACCELERATION)
 def displacement_constant_a(v0: float, t: float, a: float) -> float:
-    """
+    r"""
     Calculate displacement under constant acceleration ($x = v_0 t + \\frac{1}{2}a t^2$).
 
     Project: Project Formulon-Physics
@@ -134,7 +134,7 @@ def final_velocity_constant_a(v0: float, a: float, t: float) -> float:
 
 @validate(v0=RULES.VELOCITY, a=RULES.ACCELERATION, delta_x=RULES.DISPLACEMENT)
 def velocity_displacement_relation(v0: float, a: float, delta_x: float) -> float:
-    """
+    r"""
     Calculate final velocity magnitude squared relation ($v = \\sqrt{v_0^2 + 2 a \\Delta x}$).
 
     Project: Project Formulon-Physics
@@ -147,7 +147,7 @@ def velocity_displacement_relation(v0: float, a: float, delta_x: float) -> float
 
 @validate(v0=RULES.VELOCITY, v=RULES.VELOCITY, t=RULES.NON_NEG_TIME)
 def displacement_from_velocities(v0: float, v: float, t: float) -> float:
-    """
+    r"""
     Calculate displacement using initial and final velocities under uniform acceleration ($x = \\frac{v_0 + v}{2} t$).
 
     Project: Project Formulon-Physics
@@ -167,7 +167,7 @@ def freefall_velocity(g: float, t: float) -> float:
 
 @validate(g=RULES.GRAVITY, t=RULES.NON_NEG_TIME)
 def freefall_height(g: float, t: float) -> float:
-    """
+    r"""
     Calculate the vertical drop distance of an object from rest under freefall ($h = \\frac{1}{2}g t^2$).
 
     Project: Project Formulon-Physics
@@ -177,7 +177,7 @@ def freefall_height(g: float, t: float) -> float:
 
 @validate(h=RULES.HEIGHT, g=RULES.GRAVITY)
 def time_of_flight_vertical(h: float, g: float) -> float:
-    """
+    r"""
     Calculate time to reach baseline floor when dropped vertically from height h ($t = \\sqrt{2h/g}$).
 
     Project: Project Formulon-Physics
@@ -191,7 +191,7 @@ def time_of_flight_vertical(h: float, g: float) -> float:
 
 @validate(v0=RULES.SPEED, theta_deg=RULES.ANGLE_DEG_90, g=RULES.GRAVITY)
 def projectile_time_of_flight(v0: float, theta_deg: float, g: float) -> float:
-    """
+    r"""
     Calculate total projectile time of flight over symmetric plane surfaces ($T = \\frac{2 v_0 \\sin\\theta}{g}$).
 
     Project: Project Formulon-Physics
@@ -201,7 +201,7 @@ def projectile_time_of_flight(v0: float, theta_deg: float, g: float) -> float:
 
 @validate(v0=RULES.SPEED, theta_deg=RULES.ANGLE_DEG_90, g=RULES.GRAVITY)
 def projectile_max_height(v0: float, theta_deg: float, g: float) -> float:
-    """
+    r"""
     Calculate maximum trajectory vertex elevation height reached by a projectile ($H = \\frac{v_0^2 \\sin^2\\theta}{2g}$).
 
     Project: Project Formulon-Physics
@@ -211,7 +211,7 @@ def projectile_max_height(v0: float, theta_deg: float, g: float) -> float:
 
 @validate(v0=RULES.SPEED, theta_deg=RULES.ANGLE_DEG_90, g=RULES.GRAVITY)
 def projectile_range(v0: float, theta_deg: float, g: float) -> float:
-    """
+    r"""
     Calculate horizontal ground downrange footprint displacement achieved ($R = \\frac{v_0^2 \\sin(2\\theta)}{g}$).
 
     Project: Project Formulon-Physics
@@ -270,7 +270,7 @@ def linear_momentum(mass: float, velocity: float) -> float:
 
 @validate(delta_p=RULES.MOMENTUM, delta_t=RULES.POSITIVE_TIME)
 def newtons_second_law_derivative(delta_p: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate force acting as a direct time rate change of linear momentum system state ($F = \\Delta p / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -280,7 +280,7 @@ def newtons_second_law_derivative(delta_p: float, delta_t: float) -> float:
 
 @validate(force=RULES.FORCE, delta_t=RULES.POSITIVE_TIME)
 def impulse_constant_force(force: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate structural linear impulse under a constant force payload window ($J = F \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -289,7 +289,7 @@ def impulse_constant_force(force: float, delta_t: float) -> float:
 
 
 def impulse_variable_force(force_func: Callable[[float], float], t_start: float, t_end: float) -> float:
-    """
+    r"""
     Calculate impulse delivered across time tracking profiles under fluctuating variable load windows ($J = \\int F(t) dt$).
 
     Project: Project Formulon-Physics
@@ -303,7 +303,7 @@ def impulse_variable_force(force_func: Callable[[float], float], t_start: float,
 
 @validate(mu_s=RULES.COEFF_FRICTION, normal_force=RULES.NORMAL_FORCE)
 def static_friction_max(mu_s: float, normal_force: float) -> float:
-    """
+    r"""
     Calculate absolute limit threshold value before structural boundary interface slippage occurs ($f_{s,max} = \\mu_s F_n$).
 
     Project: Project Formulon-Physics
@@ -313,7 +313,7 @@ def static_friction_max(mu_s: float, normal_force: float) -> float:
 
 @validate(mu_k=RULES.COEFF_FRICTION, normal_force=RULES.NORMAL_FORCE)
 def kinetic_friction(mu_k: float, normal_force: float) -> float:
-    """
+    r"""
     Calculate uniform interface dynamic friction mechanical constraint value during slippage ($f_k = \\mu_k F_n$).
 
     Project: Project Formulon-Physics
@@ -358,7 +358,7 @@ def apparent_weight_downward(mass: float, g: float, a_down: float) -> float:
 
 @validate(delta_theta=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def angular_velocity(delta_theta: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate average scalar angular velocity metric ($\omega = \\Delta \\theta / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -368,7 +368,7 @@ def angular_velocity(delta_theta: float, delta_t: float) -> float:
 
 @validate(delta_omega=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def angular_acceleration(delta_omega: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate average scalar angular acceleration tracking indicator ($\\alpha = \\Delta \omega / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -378,7 +378,7 @@ def angular_acceleration(delta_omega: float, delta_t: float) -> float:
 
 @validate(radius=RULES.RADIUS, theta_rad=RULES.REAL)
 def linear_displacement_from_angular(radius: float, theta_rad: float) -> float:
-    """
+    r"""
     Translate pure localized angular metric tracking dimensions directly into linear arc lengths ($s = r \\theta$).
 
     Project: Project Formulon-Physics
@@ -388,7 +388,7 @@ def linear_displacement_from_angular(radius: float, theta_rad: float) -> float:
 
 @validate(radius=RULES.RADIUS, omega_rad_s=RULES.REAL)
 def linear_velocity_from_angular(radius: float, omega_rad_s: float) -> float:
-    """
+    r"""
     Determine tangential edge translational velocity component vector magnitude scales ($v = r \omega$).
 
     Project: Project Formulon-Physics
@@ -398,7 +398,7 @@ def linear_velocity_from_angular(radius: float, omega_rad_s: float) -> float:
 
 @validate(radius=RULES.RADIUS, alpha_rad_s2=RULES.REAL)
 def tangential_acceleration(radius: float, alpha_rad_s2: float) -> float:
-    """
+    r"""
     Evaluate translation edge boundary tangential structural acceleration properties ($a_t = r \\alpha$).
 
     Project: Project Formulon-Physics
@@ -428,7 +428,7 @@ def centripetal_force(mass: float, v: float, radius: float) -> float:
 
 @validate(omega0=RULES.REAL, alpha=RULES.REAL, t=RULES.NON_NEG_TIME)
 def rotational_final_velocity(omega0: float, alpha: float, t: float) -> float:
-    """
+    r"""
     Calculate final state angular velocity under uniform coordinate angular acceleration ($\omega = \omega_0 + \\alpha t$).
 
     Project: Project Formulon-Physics
@@ -438,7 +438,7 @@ def rotational_final_velocity(omega0: float, alpha: float, t: float) -> float:
 
 @validate(omega0=RULES.REAL, t=RULES.NON_NEG_TIME, alpha=RULES.REAL)
 def rotational_displacement(omega0: float, t: float, alpha: float) -> float:
-    """
+    r"""
     Calculate angular rotation displacement tracking index coordinates ($\\theta = \omega_0 t + \\frac{1}{2}\\alpha t^2$).
 
     Project: Project Formulon-Physics
@@ -448,7 +448,7 @@ def rotational_displacement(omega0: float, t: float, alpha: float) -> float:
 
 @validate(omega0=RULES.REAL, alpha=RULES.REAL, delta_theta=RULES.REAL)
 def rotational_velocity_displacement_relation(omega0: float, alpha: float, delta_theta: float) -> float:
-    """
+    r"""
     Calculate rotational angular velocity relationship thresholds ($\omega = \\sqrt{\omega_0^2 + 2 \\alpha \\Delta \\theta}$).
 
     Project: Project Formulon-Physics
@@ -465,7 +465,7 @@ def rotational_velocity_displacement_relation(omega0: float, alpha: float, delta
 
 @validate(radius=RULES.RADIUS, force=RULES.FORCE, theta_deg=RULES.ANGLE_DEG)
 def torque(radius: float, force: float, theta_deg: float) -> float:
-    """
+    r"""
     Calculate structural directional lever arm twisting torque force moments ($\\tau = r F \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -474,7 +474,7 @@ def torque(radius: float, force: float, theta_deg: float) -> float:
 
 
 def discrete_moment_of_inertia(masses: list[float], radii: list[float]) -> float:
-    """
+    r"""
     Calculate total rotational moment of inertia across collections of point mass distribution nodes ($I = \\sum m_i r_i^2$).
 
     Project: Project Formulon-Physics
@@ -492,7 +492,7 @@ def discrete_moment_of_inertia(masses: list[float], radii: list[float]) -> float
 
 
 def continuous_moment_of_inertia(density_func: Callable[[float], float], r_min: float, r_max: float) -> float:
-    """
+    r"""
     Integrate rotational system profiles to determine continuous volume mass inertia metrics ($I = \\int r^2 dm$).
 
     Project: Project Formulon-Physics
@@ -527,7 +527,7 @@ def perpendicular_axis_theorem(i_x: float, i_y: float) -> float:
 
 @validate(radius=RULES.RADIUS, linear_momentum_val=RULES.REAL, theta_deg=RULES.ANGLE_DEG)
 def angular_momentum_particle(radius: float, linear_momentum_val: float, theta_deg: float) -> float:
-    """
+    r"""
     Determine specific localized vector orbital angular momentum values tracking dynamic particles ($L = r p \\sin\\theta$).
 
     Project: Project Formulon-Physics
@@ -537,7 +537,7 @@ def angular_momentum_particle(radius: float, linear_momentum_val: float, theta_d
 
 @validate(i=RULES.MOMENT_OF_INERTIA, omega_rad_s=RULES.REAL)
 def angular_momentum_rigid_body(i: float, omega_rad_s: float) -> float:
-    """
+    r"""
     Determine consolidated macroscopic angular momentum vectors across rigid bodies ($L = I \omega$).
 
     Project: Project Formulon-Physics
@@ -547,7 +547,7 @@ def angular_momentum_rigid_body(i: float, omega_rad_s: float) -> float:
 
 @validate(delta_l=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def torque_angular_momentum_relation(delta_l: float, delta_t: float) -> float:
-    """
+    r"""
     Calculate dynamic angular torque as direct continuous time rates of angular momentum mutations ($\\tau = \\Delta L / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -561,7 +561,7 @@ def torque_angular_momentum_relation(delta_l: float, delta_t: float) -> float:
 
 @validate(force=RULES.FORCE, displacement=RULES.DISPLACEMENT, theta_deg=RULES.WORK_ANGLE_DEG)
 def work_constant_force(force: float, displacement: float, theta_deg: float) -> float:
-    """
+    r"""
     Calculate mechanical work translations completed by absolute uniform constant directional loads ($W = F d \\cos\\theta$).
 
     Project: Project Formulon-Physics
@@ -570,7 +570,7 @@ def work_constant_force(force: float, displacement: float, theta_deg: float) -> 
 
 
 def work_variable_force(force_func: Callable[[float], float], x_start: float, x_end: float) -> float:
-    """
+    r"""
     Evaluate energetic integrals determining work distributions matching continuous changing forces ($W = \\int F(x) dx$).
 
     Project: Project Formulon-Physics
@@ -582,7 +582,7 @@ def work_variable_force(force_func: Callable[[float], float], x_start: float, x_
 
 @validate(mass=RULES.MASS, velocity=RULES.VELOCITY)
 def translational_kinetic_energy(mass: float, velocity: float) -> float:
-    """
+    r"""
     Calculate active macroscopic translational kinetic state work limits ($K = \\frac{1}{2}m v^2$).
 
     Project: Project Formulon-Physics
@@ -592,7 +592,7 @@ def translational_kinetic_energy(mass: float, velocity: float) -> float:
 
 @validate(i=RULES.MOMENT_OF_INERTIA, omega_rad_s=RULES.REAL)
 def rotational_kinetic_energy(i: float, omega_rad_s: float) -> float:
-    """
+    r"""
     Calculate internal spin-state energy metrics across rotating bodies ($K_{rot} = \\frac{1}{2}I \omega^2$).
 
     Project: Project Formulon-Physics
@@ -612,7 +612,7 @@ def gravitational_potential_energy(mass: float, g: float, height: float) -> floa
 
 @validate(k=RULES.SPRING_CONST, delta_x=RULES.SPRING_DISPLACEMENT)
 def elastic_potential_energy(k: float, delta_x: float) -> float:
-    """
+    r"""
     Evaluate structural internal conservation grid power loaded into compressed springs ($U_s = \\frac{1}{2}k x^2$).
 
     Project: Project Formulon-Physics
@@ -622,7 +622,7 @@ def elastic_potential_energy(k: float, delta_x: float) -> float:
 
 @validate(w_net=RULES.REAL)
 def work_energy_theorem_translational(w_net: float) -> float:
-    """
+    r"""
     Express net external spatial load allocations as direct mutations across total kinetic fields ($\\Delta K = W_{net}$).
 
     Project: Project Formulon-Physics
@@ -632,7 +632,7 @@ def work_energy_theorem_translational(w_net: float) -> float:
 
 @validate(work=RULES.REAL, delta_t=RULES.POSITIVE_TIME)
 def average_power(work: float, delta_t: float) -> float:
-    """
+    r"""
     Measure gross average energetic dissipation throughput velocities ($P_{avg} = W / \\Delta t$).
 
     Project: Project Formulon-Physics
@@ -652,7 +652,7 @@ def instantaneous_power(force: float, velocity: float) -> float:
 
 @validate(work_out=RULES.WORK_IO, work_in=RULES.WORK_IO)
 def mechanical_efficiency(work_out: float, work_in: float) -> float:
-    """
+    r"""
     Measure systemic mechanical efficiency percentages comparing load footprints ($\\eta = [W_{out} / W_{in}] \\times 100$).
 
     Project: Project Formulon-Physics
@@ -666,7 +666,7 @@ def mechanical_efficiency(work_out: float, work_in: float) -> float:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def center_mass_discrete(masses: list[float], coordinates: list[float]) -> float:
-    """
+    r"""
     Determine the composite structural mean balance point across discrete distributed particle systems ($x_{cm} = \\frac{\\sum m_i x_i}{\\sum m_i}$).
 
     Project: Project Formulon-Physics
@@ -691,7 +691,7 @@ def center_mass_discrete(masses: list[float], coordinates: list[float]) -> float
 
 @validate(m1=RULES.MASS, m2=RULES.MASS, r=RULES.RADIUS)
 def newtons_law_of_gravitation(m1: float, m2: float, r: float) -> float:
-    """
+    r"""
     Calculate cosmic gravitational attraction forces shared by isolated physical systems ($F = G \\frac{m_1 m_2}{r^2}$).
 
     Project: Project Formulon-Physics
@@ -724,7 +724,7 @@ def gravitational_potential(m_source: float, r: float) -> float:
 
 @validate(m1=RULES.MASS, m2=RULES.MASS, r=RULES.RADIUS)
 def gravitational_potential_energy_cosmic(m1: float, m2: float, r: float) -> float:
-    """
+    r"""
     Evaluate absolute continuous macroscopic mechanical binding energies spanning orbital scales ($U = -G \\frac{m_1 m_2}{r}$).
 
     Project: Project Formulon-Physics
@@ -735,7 +735,7 @@ def gravitational_potential_energy_cosmic(m1: float, m2: float, r: float) -> flo
 
 @validate(m_central=RULES.MASS, r=RULES.RADIUS)
 def orbital_velocity(m_central: float, r: float) -> float:
-    """
+    r"""
     Calculate stable horizontal trajectory velocities required to maintain circular paths ($v = \\sqrt{G M / r}$).
 
     Project: Project Formulon-Physics
@@ -746,7 +746,7 @@ def orbital_velocity(m_central: float, r: float) -> float:
 
 @validate(m_central=RULES.MASS, r=RULES.RADIUS)
 def escape_velocity(m_central: float, r: float) -> float:
-    """
+    r"""
     Calculate entry launch thresholds needed to exit localized gravitational field wells ($v_{esc} = \\sqrt{2 G M / r}$).
 
     Project: Project Formulon-Physics
@@ -757,7 +757,7 @@ def escape_velocity(m_central: float, r: float) -> float:
 
 @validate(m_central=RULES.MASS, semi_major_axis_r=RULES.RADIUS)
 def keplers_third_law_period(m_central: float, semi_major_axis_r: float) -> float:
-    """
+    r"""
     Determine structural periodic orbital cycle parameters via Kepler's harmonic matching ($T = \\sqrt{\\frac{4\\pi^2 r^3}{G M}}$).
 
     Project: Project Formulon-Physics
