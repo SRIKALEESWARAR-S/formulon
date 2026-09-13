@@ -1,4 +1,4 @@
-# Formulon Physics 0.6.5
+# Formulon Physics 0.6.6
 
 Formulon Physics is a modular computational-physics library containing **234 public scientific formula functions** across classical mechanics, electromagnetism, waves/optics, thermodynamics, fluids, modern physics, mathematical physics and series. It also provides optional PennyLane/Qiskit quantum-computing examples.
 
@@ -58,7 +58,8 @@ print(result.target_binary, result.found_state, result.success_probability)
 
 ### Legendre quantum encoder/decoder
 
-The encoder maps \(x\) to \(P_0(x),...,P_{d-1}(x)\), uses \(RY(rccos(P_n))\), and therefore has \(\langle Zangle=P_n\) ideally. Finite-shot computational-basis measurement gives sampled outcomes; the decoder reconstructs the classical coordinate from estimated Legendre features.
+The encoder maps \(x\) to \(P_0(x),...,P_{d-1}(x)\), uses \(RY(rccos(P_n))\), and therefore has \(\langle Z
+angle=P_n\) ideally. Finite-shot computational-basis measurement gives sampled outcomes; the decoder reconstructs the classical coordinate from estimated Legendre features.
 
 PennyLane is an open-source platform for quantum computing and QML; Formulon's quantum layer is intentionally optional. citeturn0search5
 

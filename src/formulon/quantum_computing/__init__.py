@@ -1,2 +1,2 @@
-"""Optional quantum-computing extensions for Formulon Physics 0.6.5."""
+"""Optional quantum-computing extensions for Formulon Physics 0.6.6."""
 __all__ = []

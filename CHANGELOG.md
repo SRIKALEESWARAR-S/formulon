@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.5
+## 0.6.6
 
 - Removed the broken legacy `classical_physics.py` module from the distribution.
 - Added PennyLane Grover search with validated integer targets and automatic iteration count.
