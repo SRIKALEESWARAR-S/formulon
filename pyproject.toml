@@ -9,7 +9,7 @@ description = "Open-source computational physics library with validated formulas
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-keywords = ["physics", "formulas", "science", "education", "numpy", "scipy", "numba"]
+keywords = ["physics", "quantum", "formulas", "science", "education", "numpy", "scipy", "numba", "pennylane", "qiskit"]
 authors = [
   { name = "SRIKALEESWARAR-S", email = "srikaleeswarar675@gmail.com" },
 ]
@@ -50,6 +50,9 @@ Source = "https://github.com/SRIKALEESWARAR-S/formulon"
 [tool.hatch.version]
 path = "src/formulon/__about__.py"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/formulon"]
+
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
@@ -64,7 +67,7 @@ branch = true
 parallel = true
 omit = [
   "src/formulon/__about__.py",
- ]
+]
 
 [tool.coverage.paths]
 formulon = ["src/formulon", "*/formulon/src/formulon"]
@@ -76,5 +79,3 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
-[tool.hatch.build.targets.wheel]
-packages = ["formulon"]
