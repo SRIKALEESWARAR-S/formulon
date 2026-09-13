@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulon — Quantum State Explorer</title>
+<meta name="description" content="Interactive quantum state explorer by Formulon. Explore a single-qubit state, probabilities, phase, and Bloch sphere.">
+<style>
+:root{--bg:#07111f;--panel:#0d1b2e;--panel2:#10243c;--text:#eef6ff;--muted:#9db0c7;--line:#203853;--accent:#7dd3fc;--accent2:#a78bfa;--good:#86efac}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0%,#123052 0,#07111f 42%,#050b14 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{max-width:1180px;margin:auto;padding:30px 22px 18px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.brand{font-weight:800;letter-spacing:.08em}.brand span{color:var(--accent)}nav a{color:var(--muted);text-decoration:none;margin-left:18px;font-size:.9rem}
+.hero{max-width:1180px;margin:auto;padding:45px 22px 30px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--accent);font-size:.75rem;font-weight:700}
+h1{font-size:clamp(2.5rem,7vw,5.5rem);line-height:.95;margin:14px 0 20px;max-width:850px;letter-spacing:-.06em}
+.hero p{max-width:700px;color:var(--muted);font-size:1.1rem;line-height:1.7}
+.quote{margin-top:28px;border-left:2px solid var(--accent2);padding:10px 18px;color:#dbeafe;font-style:italic}
+main{max-width:1180px;margin:auto;padding:15px 22px 70px}.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+.card{background:linear-gradient(145deg,rgba(16,36,60,.92),rgba(8,20,35,.92));border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 20px 60px #0004}
+h2{margin:0 0 8px;font-size:1.15rem}h3{font-size:.85rem;color:var(--muted);font-weight:600;margin:25px 0 8px}
+.eq{font-family:Georgia,serif;font-size:1.5rem;padding:18px 0;color:#fff}
+.control{margin:18px 0}.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.value{font-family:ui-monospace,monospace;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+button{border:1px solid var(--line);background:#132b47;color:var(--text);padding:9px 13px;border-radius:10px;cursor:pointer}
+button:hover{border-color:var(--accent)}.preset{display:flex;gap:7px;flex-wrap:wrap}
+.visual{min-height:540px;display:grid;grid-template-columns:1fr 300px;gap:15px;align-items:center}
+canvas{width:100%;height:auto;max-height:520px;display:block}
+.stats{display:grid;gap:12px}.stat{padding:16px;border:1px solid var(--line);border-radius:15px;background:#09182a}.stat small{color:var(--muted)}.stat strong{display:block;font-size:1.45rem;margin-top:5px}
+.bar{height:9px;border-radius:10px;background:#142b43;overflow:hidden;margin-top:9px}.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:50%;transition:.2s}
+.formula{margin-top:18px;padding:18px;border-radius:15px;background:#071321;border:1px solid var(--line);font-family:Georgia,serif;line-height:1.9}
+footer{max-width:1180px;margin:auto;padding:0 22px 35px;color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;gap:15px}
+footer a{color:var(--accent);text-decoration:none}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.visual{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){header{padding-top:20px}nav{display:none}.hero{padding-top:28px}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">FORMULON<span>.</span></div>
+  <nav><a href="#explorer">Explorer</a><a href="https://github.com/SRIKALEESWARAR-S/formulon" target="_blank">GitHub</a><a href="https://pypi.org/project/formulon-physics/" target="_blank">PyPI</a></nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Quantum Laboratory · 01</div>
+  <h1>Quantum State<br>Explorer</h1>
+  <p>Move through the mathematics of a single qubit. Change its amplitudes, normalize the state, and watch its probability and Bloch-sphere representation update in real time.</p>
+  <div class="quote">“The laws of quantum mechanics themselves cannot be formulated ... without resort to the mathematical language.”</div>
+</section>
+
+<main id="explorer">
+<div class="grid">
+<section class="card">
+  <h2>State controls</h2>
+  <div class="eq">|ψ⟩ = α|0⟩ + β|1⟩</div>
+
+  <div class="control">
+    <div class="row"><label>α — amplitude of |0⟩</label><span class="value" id="av">0.866</span></div>
+    <input id="a" type="range" min="-1" max="1" step="0.001" value="0.866">
+  </div>
+  <div class="control">
+    <div class="row"><label>β — amplitude of |1⟩</label><span class="value" id="bv">0.500</span></div>
+    <input id="b" type="range" min="-1" max="1" step="0.001" value="0.5">
+  </div>
+
+  <h3>Quick states</h3>
+  <div class="preset">
+    <button data-a="1" data-b="0">|0⟩</button>
+    <button data-a="0" data-b="1">|1⟩</button>
+    <button data-a=".70710678" data-b=".70710678">|+⟩</button>
+    <button data-a=".70710678" data-b="-.70710678">|−⟩</button>
+    <button data-a=".8660254" data-b=".5">60°</button>
+  </div>
+
+  <div class="formula">
+    <b>Normalization</b><br>
+    |α|² + |β|² = <span id="norm">1.000</span><br><br>
+    <b>State used by the explorer</b><br>
+    |ψ⟩ = <span id="state">0.866|0⟩ + 0.500|1⟩</span>
+  </div>
+</section>
+
+<section class="card visual">
+  <canvas id="bloch" width="620" height="620"></canvas>
+  <div class="stats">
+    <div class="stat"><small>P(0)</small><strong id="p0">75.0%</strong><div class="bar"><div class="fill" id="f0"></div></div></div>
+    <div class="stat"><small>P(1)</small><strong id="p1">25.0%</strong><div class="bar"><div class="fill" id="f1"></div></div></div>
+    <div class="stat"><small>Bloch X</small><strong id="x">0.866</strong></div>
+    <div class="stat"><small>Bloch Z</small><strong id="z">0.500</strong></div>
+    <div class="stat"><small>Polar angle θ</small><strong id="theta">60.0°</strong></div>
+    <div class="stat"><small>Azimuth φ</small><strong id="phi">0.0°</strong></div>
+  </div>
+</section>
+</div>
+
+<section class="card" style="margin-top:18px">
+<h2>What are you seeing?</h2>
+<p style="color:var(--muted);line-height:1.75">
+For this real-amplitude explorer, the normalized state can be written as
+<em>|ψ⟩ = cos(θ/2)|0⟩ + sin(θ/2)|1⟩</em>. The Bloch vector is
+<em>(sin θ, 0, cos θ)</em>. The two measurement probabilities are
+<em>P(0)=|α|²</em> and <em>P(1)=|β|²</em>.
+Try |+⟩ and |−⟩: both have equal measurement probabilities, but they point in opposite directions on the Bloch sphere.
+</p>
+</section>
+</main>
+
+<footer>
+<span>Formulon · Interactive Mathematical Physics</span>
+<span><a href="https://github.com/SRIKALEESWARAR-S/formulon" target="_blank">Open source on GitHub</a></span>
+</footer>
+
+<script>
+const aEl=document.getElementById('a'),bEl=document.getElementById('b');
+const out=id=>document.getElementById(id);
+const canvas=document.getElementById('bloch'),ctx=canvas.getContext('2d');
+
+function drawSphere(vx,vy,vz){
+  const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2,r=Math.min(w,h)*.34;
+  ctx.clearRect(0,0,w,h);
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.strokeStyle='rgba(157,176,199,.28)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,r,r*.36,0,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,r*.36,r,0,0,Math.PI*2);ctx.stroke();
+  // axes
+  ctx.setLineDash([5,7]);ctx.strokeStyle='rgba(125,211,252,.25)';
+  [[-r,0,r,0],[0,-r,0,r]].forEach(q=>{ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(q[2],q[3]);ctx.stroke()});
+  ctx.setLineDash([]);
+  // vector projection (simple pedagogical projection)
+  const px=vx*r, py=-vz*r;
+  ctx.strokeStyle='#7dd3fc';ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(px,py);ctx.stroke();
+  ctx.fillStyle='#a78bfa';ctx.beginPath();ctx.arc(px,py,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#eef6ff';ctx.font='bold 18px system-ui';
+  ctx.fillText('|0⟩',-13,-r-18);ctx.fillText('|1⟩',-13,r+30);
+  ctx.fillText('+X',r+12,6);ctx.fillText('−X',-r-38,6);
+  ctx.fillStyle='#9db0c7';ctx.font='14px system-ui';
+  ctx.fillText('Bloch sphere · real amplitudes',-105,r+62);
+  ctx.restore();
+}
+function update(){
+  let a=parseFloat(aEl.value),b=parseFloat(bEl.value);
+  const n=Math.hypot(a,b);
+  if(n===0){a=1;b=0}
+  else {a/=n;b/=n}
+  const p0=a*a,p1=b*b;
+  const X=2*a*b,Z=a*a-b*b;
+  const theta=Math.atan2(Math.abs(X),Z)*180/Math.PI;
+  const signedTheta=(b<0?-theta:theta);
+  out('av').textContent=a.toFixed(3);out('bv').textContent=b.toFixed(3);
+  out('norm').textContent=(p0+p1).toFixed(3);
+  out('state').textContent=(a<0?a.toFixed(3):a.toFixed(3))+'|0⟩ '+(b>=0?'+ ':'− ')+Math.abs(b).toFixed(3)+'|1⟩';
+  out('p0').textContent=(p0*100).toFixed(1)+'%';out('p1').textContent=(p1*100).toFixed(1)+'%';
+  out('f0').style.width=(p0*100)+'%';out('f1').style.width=(p1*100)+'%';
+  out('x').textContent=X.toFixed(3);out('z').textContent=Z.toFixed(3);
+  out('theta').textContent=Math.abs(signedTheta).toFixed(1)+'°';
+  out('phi').textContent=(b<0?180:0)+'°';
+  drawSphere(X,0,Z);
+}
+[aEl,bEl].forEach(e=>e.addEventListener('input',update));
+document.querySelectorAll('.preset').forEach(box=>box.addEventListener('click',e=>{
+ if(e.target.dataset.a){aEl.value=e.target.dataset.a;bEl.value=e.target.dataset.b;update();}
+}));
+update();
+</script>
+</body>
+</html>
