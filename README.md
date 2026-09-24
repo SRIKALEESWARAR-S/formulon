@@ -1,4 +1,21 @@
-# Formulon Physics 0.6.6
+# Formulon Physics 1.000
+## What's new in Formulon 1.0
+
+Formulon 1.0 introduces the Quantum-Informed Physical AI Engine, a
+hybrid quantum-classical research module for learning mappings between
+physical feature representations and noisy quantum measurements.
+
+### Core capabilities
+
+- Classical physics computation
+- Quantum-computing modules
+- Physics-informed machine learning
+- Quantum-informed physical AI
+- Noisy quantum simulation
+- Physical feature extraction
+- Reconstruction and classification
+- Interactive visualizations
+- Modular Python API
 
 Formulon Physics is a modular computational-physics library containing **234 public scientific formula functions** across classical mechanics, electromagnetism, waves/optics, thermodynamics, fluids, modern physics, mathematical physics and series. It also provides optional PennyLane/Qiskit quantum-computing examples.
 
