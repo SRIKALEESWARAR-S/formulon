@@ -37,85 +37,53 @@ The project primarily targets Linux. Windows contributors may encounter platform
 ### 1. Fork and Clone
 
 Fork the repository on GitHub, then clone your fork:
-
 ```bash
-
 git clone https://github.com/YOUR_USERNAME/formulon.git
 
 cd formulon
-
 ```
-
 ### 2. Create a Virtual Environment
 
 On Linux or macOS:
-
 ```bash
-
 python -m venv .venv
 
 source .venv/bin/activate
-
 ```
-
 On Windows PowerShell:
-
 ```powershell
-
 py -3.11 -m venv .venv
 
 .\.venv\\Scripts\\Activate.ps1
-
 ```
-
 Python 3.11 is an example supported version. Use another compatible Python version if necessary.
 
 ### 3. Install Dependencies
 
 Install the project in editable mode:
-
 ```bash
-
 python -m pip install -e .
-
 ```
-
 Install pytest:
-
 ```bash
-
 python -m pip install pytest
-
 ```
-
 Optional quantum dependencies:
-
 ```bash
-
 python -m pip install -e ".[quantum]"
-
 ```
-
 Quantum dependencies are not required for most core contributions.
 
 ## Running Tests
 
 Run the test suite from the repository root:
-
 ```bash
-
 python -m pytest tests
-
 ```
-
 To run an individual test module:
-
 ```bash
-
 python -m pytest tests/test_formula_catalog.py
-
 ```
-
 Some tests or imports may require optional dependencies. Report any installation or test failures with your Python version, operating system, and relevant error output.
 
 ## Working on an Issue
@@ -131,13 +99,9 @@ Before starting significant changes:
 4. Create a focused branch for your contribution.
 
 Example:
-
 ```bash
-
 git switch -c fix/short-description
-
 ```
-
 Keep unrelated changes out of your pull request.
 
 ## Scientific Formula Contributions
