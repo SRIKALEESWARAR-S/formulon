@@ -1,3 +1,6 @@
+from importlib.metadata import version
+
 def test_core_import():
     import formulon
-    assert formulon.__version__ == "0.6.5"
+
+    assert formulon.__version__ == version("formulon-physics")
