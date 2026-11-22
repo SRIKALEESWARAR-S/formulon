@@ -40,20 +40,27 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 import numpy as np
-import torch
-import torch.nn as nn
 from scipy import special
-from sklearn.metrics import accuracy_score, mean_squared_error
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-# -----------------------------
-# Optional quantum dependencies
-# -----------------------------
-import pennylane as qml
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-from qiskit_aer.noise import NoiseModel, depolarizing_error, phase_damping_error
+# -----------------------------------------------------------------------------
+# Heavy optional dependencies.  This engine is deliberately *pinned* to two
+# frameworks (it is not backend-switchable like the rest of Formulon): Qiskit-Aer
+# supplies the noise model and PennyLane+torch the differentiable quantum layer.
+# -----------------------------------------------------------------------------
+try:
+    import torch
+    import torch.nn as nn
+    from sklearn.metrics import accuracy_score, mean_squared_error
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    import pennylane as qml
+    from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+    from qiskit_aer.noise import NoiseModel, depolarizing_error, phase_damping_error
+except ImportError as _exc:  # pragma: no cover
+    raise ImportError(
+        'The QML engine needs torch, scikit-learn, pennylane, qiskit and qiskit-aer: '
+        'pip install "formulon-physics[qml]"') from _exc
 
 
 # ============================================================

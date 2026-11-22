@@ -14,8 +14,7 @@ License: Apache-2.0
 
 import re
 from functools import wraps
-import numba
-from numba import jit
+from .jit import lazy_njit
 import numpy as np
 import scipy as si
 
@@ -63,24 +62,21 @@ def safe_compute_jit(use_jit: bool = True, nopython: bool = False):
     Parameters
     ----------
     use_jit : bool, default=True
-        Whether to apply JIT compilation to the targeted calculation loop.
+        Mark the function as JIT-capable.  Compilation only happens when requested
+        (``f(..., jit=True)``, ``formulon.set_jit(True)`` or ``FORMULON_JIT=1``).
     nopython : bool, default=False
         Whether to strictly force nopython mode for JIT execution paths.
     """
     def decorator(func):
-        if use_jit:
-            try:
-                jitted_func = jit(func, nopython=nopython, cache=True)
-            except Exception:
-                # Fallback: use JIT with nopython=False for robust compatibility
-                jitted_func = jit(func, nopython=False, cache=True)
-        else:
-            jitted_func = func
-        
+        # JIT is dynamic: compiled on demand (jit=True per call, set_jit(), FORMULON_JIT=1)
+        jitted_func = lazy_njit(func, nopython=nopython) if use_jit else None
+
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, jit=None, **kwargs):
             try:
-                return jitted_func(*args, **kwargs)
+                if jitted_func is not None:
+                    return jitted_func(*args, jit=jit, **kwargs)
+                return func(*args, **kwargs)
             except ValueError as e:
                 raise ValueError(f"Validation error in {func.__name__}: {str(e)}")
             except (ZeroDivisionError, FloatingPointError) as e:

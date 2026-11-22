@@ -41,6 +41,31 @@ class PhysicalBounds:
             op='<' if self.strict_max else '<='
             raise ValueError(f"{name}={value} violates upper bound {op} {self.max_val}. {self.reason}")
 
+def _check_array(self, arr, name):
+    """Vectorised domain check: every element must satisfy the bound."""
+    a = np.asarray(arr)
+    if a.dtype == bool:
+        raise TypeError(f"{name!r} must be numeric, not boolean")
+    try:
+        a = a.astype(float)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(f"{name!r} must be numeric") from exc
+    if not np.all(np.isfinite(a)):
+        raise ValueError(f"{name!r} must be finite (found NaN/Inf)")
+    if self.min_val is not None:
+        bad = (a <= self.min_val) if self.strict_min else (a < self.min_val)
+        if np.any(bad):
+            op = '>' if self.strict_min else '>='
+            raise ValueError(f"{name}: {int(bad.sum())} value(s) violate lower bound {op} {self.min_val} (first offender {a[bad].flat[0]}). {self.reason}")
+    if self.max_val is not None:
+        bad = (a >= self.max_val) if self.strict_max else (a > self.max_val)
+        if np.any(bad):
+            op = '<' if self.strict_max else '<='
+            raise ValueError(f"{name}: {int(bad.sum())} value(s) violate upper bound {op} {self.max_val} (first offender {a[bad].flat[0]}). {self.reason}")
+    return a
+
+PhysicalBounds.check_array = _check_array
+
 class PhysicsCatalog:
     """Shared domain rules used by the formula modules.
 
@@ -168,6 +193,7 @@ def validate(**param_rules: PhysicalBounds) -> Callable:
             if isinstance(result,(int,float,np.integer,np.floating)) and not math.isfinite(float(result)):
                 raise FloatingPointError(f"{func.__name__} returned a non-finite result")
             return result
+        wrapper.__formulon_rules__ = dict(param_rules)
         return wrapper
     return decorator
 

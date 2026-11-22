@@ -12,8 +12,7 @@ License: Apache-2.0
 """
 
 import re
-import numba
-from numba import njit
+from .jit import lazy_njit as njit
 
 __all__ = [
     "arithmetic_nterm",

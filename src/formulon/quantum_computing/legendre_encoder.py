@@ -1,27 +1,22 @@
-"""Legendre-polynomial quantum encoder/decoder using PennyLane.
+"""Legendre-polynomial quantum encoder/decoder (backend-switchable).
 
-The encoder maps a classical scalar x in [xmin, xmax] to a sequence of
-Legendre modes P_0(x'), ..., P_{d-1}(x'), where x' is linearly mapped to
-[-1, 1]. Each mode controls an RY rotation.  The decoder estimates the modes
-from Z expectations and reconstructs x' by bounded least squares.
+The encoder maps a classical scalar x in [xmin, xmax] to Legendre modes
+P_0(x'), ..., P_{d-1}(x') (x' = x mapped linearly to [-1, 1]); each mode sets an RY rotation
+so that <Z> = P_n.  The decoder estimates the modes from Z expectations and recovers x' by a
+bounded least-squares search.  Every function takes ``backend=None`` (PennyLane, Qiskit or the
+NumPy simulator; see ``formulon.quantum_computing.set_backend``).
 
-``measure_and_decode`` also samples the computational basis.  Measurement is
-where a quantum state is projected onto an observed basis outcome (often
-informally called wave-function collapse).  The implementation does not claim
-that collapse is an additional computational operation beyond measurement.
+``measure_and_decode`` samples the computational basis; each sample is a concrete
+measurement outcome (the usual measurement-induced projection of the state).
 """
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 
-try:
-    import pennylane as qml
-    from pennylane import numpy as np
-except ImportError as exc:  # pragma: no cover
-    raise ImportError(
-        'PennyLane is required. Install with: pip install "formulon-physics[pennylane]"'
-    ) from exc
+import numpy as np
+
+from .circuit import Circuit
 
 __all__ = [
     "LegendreMeasurement",
@@ -29,6 +24,7 @@ __all__ = [
     "encode_legendre",
     "decode_legendre",
     "measure_and_decode",
+    "legendre_feature_expectation",
 ]
 
 
@@ -66,27 +62,33 @@ def _angles_from_features(features: np.ndarray) -> np.ndarray:
     return np.arccos(np.clip(features, -1.0, 1.0))
 
 
-def encode_legendre(x: float, degree: int, xmin: float = -1.0, xmax: float = 1.0):
-    """Prepare a differentiable PennyLane circuit that encodes Legendre modes."""
+def _encoder_circuit(angles) -> Circuit:
+    c = Circuit(len(angles))
+    for wire, theta in enumerate(angles):
+        c.ry(float(theta), wire)
+    return c
+
+
+def encode_legendre(x: float, degree: int, xmin: float = -1.0, xmax: float = 1.0,
+                    backend: str | None = None):
+    """Statevector of the circuit that encodes the Legendre modes of x (wire 0 = MSB)."""
     _check_degree(degree)
-    features = legendre_features(x, degree, xmin, xmax)
-    angles = _angles_from_features(features)
-    dev = qml.device("default.qubit", wires=degree)
+    angles = _angles_from_features(legendre_features(x, degree, xmin, xmax))
+    return _encoder_circuit(angles).state(backend)
 
-    @qml.qnode(dev)
-    def circuit():
-        for wire, theta in enumerate(angles):
-            qml.RY(theta, wires=wire)
-        return qml.state()
 
-    return circuit()
+def legendre_feature_expectation(x: float, degree: int, backend: str | None = None) -> float:
+    """<Z x Z x ... x Z> of the encoded state, which equals prod_k P_k(x) for x in [-1, 1]."""
+    _check_degree(degree)
+    angles = _angles_from_features(legendre_features(x, degree))
+    probs = _encoder_circuit(angles).run(backend=backend).probabilities
+    return float(sum(p * (-1) ** bits.count("1") for bits, p in probs.items()))
 
 
 def _expectation_decode(xmin: float, xmax: float, features: np.ndarray) -> float:
     """Recover x' from noisy estimates of Legendre features."""
     degree = len(features)
     grid = np.linspace(-1.0, 1.0, 2001)
-    design = np.stack([np.asarray([1.0] if n == 0 else []) for n in range(degree)]) if False else None
     basis = np.empty((grid.size, degree))
     basis[:, 0] = 1.0
     if degree > 1:
@@ -121,27 +123,23 @@ class LegendreMeasurement:
 
 def measure_and_decode(x: float, degree: int, shots: int = 1000,
                        xmin: float = -1.0, xmax: float = 1.0,
-                       seed: int | None = None) -> LegendreMeasurement:
-    """Encode x, measure the qubits, and decode x from Z expectations.
+                       seed: int | None = None, backend: str | None = None) -> LegendreMeasurement:
+    """Encode x, measure the qubits ``shots`` times, and decode x from Z expectations.
 
-    The returned samples are computational-basis outcomes; each sample is a
-    concrete measurement result, representing the usual measurement-induced
-    projection of the pre-measurement state.
+    Outcome probabilities come from the chosen backend; shots are drawn with a seeded NumPy
+    generator, so a given ``seed`` gives identical samples on every backend.
     """
     _check_degree(degree)
     if not isinstance(shots, int) or isinstance(shots, bool) or shots < 1:
         raise ValueError("shots must be a positive integer")
     features = legendre_features(x, degree, xmin, xmax)
     angles = _angles_from_features(features)
-    dev = qml.device("default.qubit", wires=degree, shots=shots, seed=seed)
-
-    @qml.qnode(dev)
-    def circuit():
-        for wire, theta in enumerate(angles):
-            qml.RY(theta, wires=wire)
-        return qml.sample(wires=range(degree))
-
-    raw = np.asarray(circuit(), dtype=int)
+    result = _encoder_circuit(angles).run(backend=backend)
+    counts = result.sample(shots, seed)
+    rows = [tuple(int(ch) for ch in bits) for bits, n in sorted(counts.items()) for _ in range(n)]
+    rng = np.random.default_rng(seed)
+    order = rng.permutation(len(rows))
+    raw = np.asarray([rows[i] for i in order], dtype=int)
     # For computational bit b, Z expectation is 1-2*P(b=1).
     z = tuple(float(1.0 - 2.0 * np.mean(raw[:, wire])) for wire in range(degree))
     decoded = decode_legendre(z, xmin, xmax)

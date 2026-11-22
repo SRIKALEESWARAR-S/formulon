@@ -1,0 +1,11 @@
+# SPEC-BACKENDS: one switching mechanism for every optional framework
+- **REQ-BE-001** Every domain (quantum, autodiff) resolves in the order: per-call > scope (`use_*`) > global (`set_*`) > environment variable > `auto`.
+- **REQ-BE-002** An explicitly chosen backend that is not installed raises `ImportError` with the install command; it never silently falls back. Only `auto` picks the first installed choice.
+- **REQ-BE-003** Unknown backend names raise `ValueError` listing the valid choices.
+- **REQ-BE-004** `formulon.configure(quantum=, autodiff=, jit=)` validates all arguments before changing any state (atomic) and returns `backend_status()`.
+- **REQ-BE-005** `backend_status()` reports, per domain, the preference, what it resolves to and what is installed.
+- **REQ-BE-006** Environment variables `FORMULON_QUANTUM_BACKEND`, `FORMULON_AUTODIFF_BACKEND`, `FORMULON_JIT` set the defaults.
+- **REQ-JIT-001** JIT is off by default and results with `jit=True` equal results without.
+- **REQ-JIT-002** JIT priority: per-call `jit=` > `jit_context` > `set_jit` > `FORMULON_JIT`.
+- **REQ-JIT-003** Without numba (or if compilation fails) JIT requests warn once and fall back to the Python/NumPy path.
+- **REQ-JIT-004** With numba installed, compiled results equal the Python results (ufunc and scalar kernels).

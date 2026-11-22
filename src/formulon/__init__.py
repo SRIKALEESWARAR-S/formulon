@@ -35,4 +35,6 @@ from .mathematicalseries import *
 __all__ = [name for name in globals() if not name.startswith("_")]
 
 
+from .jit import set_jit, get_jit, jit_context, numba_available
+from .backends import configure, backend_status, reset_backends
 from .formula_catalog import FORMULA_COUNT, FORMULAS, get_formula
