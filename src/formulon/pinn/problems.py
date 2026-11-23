@@ -110,6 +110,19 @@ def _np(x):
         x = x.detach().cpu().numpy()
     return np.asarray(x, dtype=float)
 
+def _like(ref, arr):
+    """`arr` as the same array type, dtype and device as `ref` (NumPy / torch / JAX).
+
+    `tensor + ndarray` is unsafe: for a tensor that requires grad, torch defers to NumPy,
+    which calls tensor.numpy() and raises "Can't call numpy() on Tensor that requires grad".
+    """
+    if hasattr(ref, "new_tensor"):                      # torch tensor
+        return ref.new_tensor(np.asarray(arr, dtype=float))
+    if type(ref).__module__.split(".")[0] in ("jax", "jaxlib"):
+        import jax.numpy as jnp
+        return jnp.asarray(arr, dtype=ref.dtype)
+    return np.asarray(arr, dtype=float)
+
 
 # ---------------------------------------------------------------- heat 1-D
 def _heat_1d(alpha=0.1, length=1.0, t_end=None):
@@ -194,7 +207,7 @@ def _poisson_2d(kx=1, ky=1):
         x, y = _np(c["x"]), _np(c["y"])
         f = w * np.sin(kx * PI * x) * np.sin(ky * PI * y)
         # "* 0.0 + f" keeps the result in the derivative container's own type (NumPy/torch/JAX)
-        return {"poisson": -(d["u_xx"] + d["u_yy"]) - (d["u_xx"] * 0.0 + f)}
+        return {"poisson": -(d["u_xx"] + d["u_yy"]) - _like(d["u_xx"], f)}
 
     return PDEProblem(
         "poisson_2d", "-Laplace(u) = f on the unit square, u=0 on the boundary (manufactured solution)",
